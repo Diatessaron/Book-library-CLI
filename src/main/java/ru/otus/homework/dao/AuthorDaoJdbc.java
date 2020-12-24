@@ -19,6 +19,13 @@ public class AuthorDaoJdbc implements AuthorDao{
     }
 
     @Override
+    public int count(){
+        return namedParameterJdbcOperations.getJdbcOperations().queryForObject(
+                "select count(*) from author", Integer.class
+        );
+    }
+
+    @Override
     public void insert(Author author) {
         namedParameterJdbcOperations.update("insert into author (name) values (:name)",
                 Map.of("name", author.getName()));
@@ -27,20 +34,20 @@ public class AuthorDaoJdbc implements AuthorDao{
     @Override
     public Author getAuthorById(long id) {
         return namedParameterJdbcOperations.queryForObject(
-                "select * from author where id = :id", Map.of("id", id), new AuthorMapper()
+                "select id, name from author where id = :id", Map.of("id", id), new AuthorMapper()
         );
     }
 
     @Override
     public Author getAuthorByName(String name) {
         return namedParameterJdbcOperations.queryForObject(
-                "select * from author where name = :name", Map.of("name", name), new AuthorMapper()
+                "select id, name from author where name = :name", Map.of("name", name), new AuthorMapper()
         );
     }
 
     @Override
     public List<Author> getAll() {
-        return namedParameterJdbcOperations.query("select * from author", new AuthorMapper());
+        return namedParameterJdbcOperations.query("select id, name from author", new AuthorMapper());
     }
 
     @Override

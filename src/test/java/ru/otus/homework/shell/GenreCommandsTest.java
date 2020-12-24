@@ -1,12 +1,16 @@
 package ru.otus.homework.shell;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.InOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.shell.Shell;
 import org.springframework.test.annotation.DirtiesContext;
+import ru.otus.homework.dao.BookDaoJdbc;
 import ru.otus.homework.dao.GenreDaoJdbc;
+import ru.otus.homework.domain.Author;
+import ru.otus.homework.domain.Book;
 import ru.otus.homework.domain.Genre;
 
 import java.util.List;
@@ -18,6 +22,8 @@ import static org.mockito.Mockito.*;
 class GenreCommandsTest {
     @MockBean
     private GenreDaoJdbc genreDaoJdbc;
+    @MockBean
+    private BookDaoJdbc bookDaoJdbc;
 
     @Autowired
     private Shell shell;
@@ -51,7 +57,7 @@ class GenreCommandsTest {
 
     @Test
     void testGetAuthorByNameByMessageComparison() {
-        when(genreDaoJdbc.getGenreByTitle(novel.getTitle())).thenReturn(novel);
+        when(genreDaoJdbc.getGenreByName(novel.getName())).thenReturn(novel);
         final String expected = novel.toString();
         final String actual = shell.evaluate(() -> "genreByTitle Modernist,novel").toString();
 
@@ -75,12 +81,34 @@ class GenreCommandsTest {
         assertEquals(expected, actual);
     }
 
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     @Test
     void shouldReturnCorrectMessageAfterDeleteMethod() {
         when(genreDaoJdbc.getGenreById(1)).thenReturn(novel);
+        when(bookDaoJdbc.getBookByGenre(novel.getName())).thenReturn
+                (new Book(1, "Ulysses", new Author(1, "James Joyce"), novel));
+
         final String expected = "Modernist novel was deleted";
         final String actual = shell.evaluate(() -> "gDelete 1").toString();
 
         assertEquals(expected, actual);
+    }
+
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
+    @Test
+    void bookShouldBeDeletedBeforeGenreDeletion(){
+        final String genreName = novel.getName();
+        when(genreDaoJdbc.getGenreById(1)).thenReturn(novel);
+        when(bookDaoJdbc.getBookByGenre(genreName)).thenReturn
+                (new Book(1, "Ulysses", new Author(1, "James Joyce"), novel));
+        shell.evaluate(() -> "gDelete 1");
+
+        final long bookId = bookDaoJdbc.getBookByGenre(genreName).getId();
+
+        final InOrder inOrder = inOrder(bookDaoJdbc, genreDaoJdbc);
+        inOrder.verify(genreDaoJdbc).getGenreById(1);
+        inOrder.verify(bookDaoJdbc).getBookByGenre(genreName);
+        inOrder.verify(bookDaoJdbc).deleteById(bookId);
+        inOrder.verify(genreDaoJdbc).deleteById(1);
     }
 }

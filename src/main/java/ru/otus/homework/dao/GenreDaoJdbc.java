@@ -19,34 +19,41 @@ public class GenreDaoJdbc implements GenreDao{
     }
 
     @Override
+    public int count(){
+        return namedParameterJdbcOperations.getJdbcOperations().queryForObject(
+                "select count(*) from genre", Integer.class
+        );
+    }
+
+    @Override
     public void insert(Genre genre) {
-        namedParameterJdbcOperations.update("insert into genre (title) values (:title)",
-                Map.of("title", genre.getTitle()));
+        namedParameterJdbcOperations.update("insert into genre (name) values (:name)",
+                Map.of("name", genre.getName()));
     }
 
     @Override
     public Genre getGenreById(long id) {
         return namedParameterJdbcOperations.queryForObject(
-                "select * from genre where id = :id", Map.of("id", id), new GenreMapper()
+                "select id, name from genre where id = :id", Map.of("id", id), new GenreMapper()
         );
     }
 
     @Override
-    public Genre getGenreByTitle(String title) {
+    public Genre getGenreByName(String name) {
         return namedParameterJdbcOperations.queryForObject(
-                "select * from genre where title = :title", Map.of("title", title), new GenreMapper()
+                "select id, name from genre where name = :name", Map.of("name", name), new GenreMapper()
         );
     }
 
     @Override
     public List<Genre> getAll(){
-        return namedParameterJdbcOperations.query("select * from genre", new GenreMapper());
+        return namedParameterJdbcOperations.query("select id, name from genre", new GenreMapper());
     }
 
     @Override
     public void update(Genre genre) {
-        namedParameterJdbcOperations.update("update genre set title = :title where id = :id",
-                Map.of("title", genre.getTitle(), "id", genre.getId()));
+        namedParameterJdbcOperations.update("update genre set name = :name where id = :id",
+                Map.of("name", genre.getName(), "id", genre.getId()));
     }
 
     @Override
@@ -60,8 +67,8 @@ public class GenreDaoJdbc implements GenreDao{
         @Override
         public Genre mapRow(ResultSet resultSet, int i) throws SQLException {
             long id = resultSet.getLong("id");
-            String title = resultSet.getString("title");
-            return new Genre(id, title);
+            String name = resultSet.getString("name");
+            return new Genre(id, name);
         }
     }
 }

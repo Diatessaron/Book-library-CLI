@@ -6,7 +6,9 @@ import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.test.annotation.DirtiesContext;
+import ru.otus.homework.domain.Author;
 import ru.otus.homework.domain.Book;
+import ru.otus.homework.domain.Genre;
 
 import java.util.List;
 
@@ -14,15 +16,28 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @JdbcTest
-@Import(BookDaoJdbc.class)
+@Import({BookDaoJdbc.class, AuthorDaoJdbc.class, GenreDaoJdbc.class})
 class BookDaoJdbcTest {
     @Autowired
     private BookDaoJdbc jdbc;
-    private final Book expectedUlysses = new Book(1, "Ulysses", "James Joyce", "Modernist novel");
+    @Autowired
+    private AuthorDaoJdbc authorDaoJdbc;
+    @Autowired
+    private GenreDaoJdbc genreDaoJdbc;
 
+    private final Book expectedUlysses = new Book(1, "Ulysses", new Author(1, "James Joyce"),
+            new Genre(1, "Modernist novel"));
+
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void testInsertionByComparing() {
-        final Book expected = new Book(2, "Discipline and Punish", "Michel Foucault", "Philosophy");
+        final Author foucault = new Author(2, "Michel Foucault");
+        final Genre philosophy = new Genre(2, "Philosophy");
+        authorDaoJdbc.insert(foucault);
+        genreDaoJdbc.insert(philosophy);
+
+        final Book expected = new Book(2, "Discipline and Punish", foucault,
+                philosophy);
         jdbc.insert(expected);
         final Book actual = jdbc.getBookById(2);
 
@@ -60,7 +75,13 @@ class BookDaoJdbcTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void testUpdateByComparing() {
-        final Book expected = new Book(1, "Discipline and Punish", "Michel Foucault", "Philosophy");
+        final Author foucault = new Author(2, "Michel Foucault");
+        final Genre philosophy = new Genre(2, "Philosophy");
+        authorDaoJdbc.insert(foucault);
+        genreDaoJdbc.insert(philosophy);
+
+        final Book expected = new Book(1, "Discipline and Punish", foucault,
+                philosophy);
         jdbc.update(expected);
         final Book actual = jdbc.getBookById(1);
 

@@ -1,13 +1,17 @@
 package ru.otus.homework.shell;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.InOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.shell.Shell;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.otus.homework.dao.AuthorDaoJdbc;
+import ru.otus.homework.dao.BookDaoJdbc;
 import ru.otus.homework.domain.Author;
+import ru.otus.homework.domain.Book;
+import ru.otus.homework.domain.Genre;
 
 import java.util.List;
 
@@ -18,6 +22,8 @@ import static org.mockito.Mockito.*;
 class AuthorCommandsTest {
     @MockBean
     private AuthorDaoJdbc authorDaoJdbc;
+    @MockBean
+    private BookDaoJdbc bookDaoJdbc;
 
     @Autowired
     private Shell shell;
@@ -75,12 +81,34 @@ class AuthorCommandsTest {
         assertEquals(expected, actual);
     }
 
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     @Test
     void shouldReturnCorrectMessageAfterDeleteMethod() {
         when(authorDaoJdbc.getAuthorById(1)).thenReturn(jamesJoyce);
+        when(bookDaoJdbc.getBookByAuthor(jamesJoyce.getName())).thenReturn
+                (new Book(1, "Ulysses", jamesJoyce, new Genre(1, "Modernist novel")));
+
         final String expected = "James Joyce was deleted";
         final String actual = shell.evaluate(() -> "aDelete 1").toString();
 
         assertEquals(expected, actual);
+    }
+
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
+    @Test
+    void bookShouldBeDeletedBeforeAuthorDeletion(){
+        final String authorName = jamesJoyce.getName();
+        when(authorDaoJdbc.getAuthorById(1)).thenReturn(jamesJoyce);
+        when(bookDaoJdbc.getBookByAuthor(authorName)).thenReturn
+                (new Book(1, "Ulysses", jamesJoyce, new Genre(1, "Modernist novel")));
+        shell.evaluate(() -> "aDelete 1");
+
+        final long bookId = bookDaoJdbc.getBookByAuthor(authorName).getId();
+
+        final InOrder inOrder = inOrder(bookDaoJdbc, authorDaoJdbc);
+        inOrder.verify(authorDaoJdbc).getAuthorById(1);
+        inOrder.verify(bookDaoJdbc).getBookByAuthor(authorName);
+        inOrder.verify(bookDaoJdbc).deleteById(bookId);
+        inOrder.verify(authorDaoJdbc).deleteById(1);
     }
 }

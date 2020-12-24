@@ -1,17 +1,21 @@
 package ru.otus.homework.shell;
 
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
 import ru.otus.homework.dao.AuthorDao;
+import ru.otus.homework.dao.BookDao;
 import ru.otus.homework.domain.Author;
 
 @ShellComponent
 public class AuthorCommands {
     private final AuthorDao authorDao;
+    private final BookDao bookDao;
 
-    public AuthorCommands(AuthorDao authorDao) {
+    public AuthorCommands(AuthorDao authorDao, BookDao bookDao) {
         this.authorDao = authorDao;
+        this.bookDao = bookDao;
     }
 
     @ShellMethod(key = {"ai", "aInsert"}, value = "Insert author. Arguments: id, author. " +
@@ -51,7 +55,13 @@ public class AuthorCommands {
     @ShellMethod(key = {"ad", "aDelete"}, value = "Delete author by id")
     public String deleteById(@ShellOption("Id") long id){
         final Author author = authorDao.getAuthorById(id);
+        try{
+            bookDao.deleteById(bookDao.getBookByAuthor(author.getName()).getId());
+        } catch (EmptyResultDataAccessException e){
+            e.printStackTrace();
+        }
         authorDao.deleteById(id);
+
         return String.format("%s was deleted", author.getName());
     }
 }

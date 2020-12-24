@@ -4,19 +4,19 @@ import java.util.Objects;
 
 public class Genre {
     private final long id;
-    private final String title;
+    private final String name;
 
-    public Genre(long id, String title) {
+    public Genre(long id, String name) {
         this.id = id;
-        this.title = title;
+        this.name = name;
     }
 
     public long getId() {
         return id;
     }
 
-    public String getTitle() {
-        return title;
+    public String getName() {
+        return name;
     }
 
     @Override
@@ -24,16 +24,16 @@ public class Genre {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Genre genre = (Genre) o;
-        return id == genre.id && title.equals(genre.title);
+        return id == genre.id && name.equals(genre.name);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, title);
+        return Objects.hash(id, name);
     }
 
     @Override
     public String toString() {
-        return title + " genre";
+        return name + " genre";
     }
 }

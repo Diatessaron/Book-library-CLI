@@ -15,11 +15,21 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 @JdbcTest
-@Import(AuthorDaoJdbc.class)
+@Import({BookDaoJdbc.class, AuthorDaoJdbc.class})
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 class AuthorDaoJdbcTest {
     @Autowired
     private AuthorDaoJdbc jdbc;
+    @Autowired
+    private BookDaoJdbc bookDaoJdbc;
+
+    @Test
+    void testCountMethod(){
+        final int expected = 1;
+        final int actual = jdbc.count();
+
+        assertEquals(expected, actual);
+    }
 
     @Test
     void testInsertionByComparing() {
@@ -46,6 +56,11 @@ class AuthorDaoJdbcTest {
         assertEquals(expected, actual);
     }
 
+    @Test
+    void shouldThrowExceptionAfterGetAuthorByNameMethodInvocation(){
+        assertThrows(EmptyResultDataAccessException.class, () -> jdbc.getAuthorByName("author"));
+    }
+
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void testUpdateByComparing() {
@@ -59,13 +74,16 @@ class AuthorDaoJdbcTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void shouldCorrectDeleteAuthorById() {
+        bookDaoJdbc.deleteById(1);
         jdbc.deleteById(1);
         assertThrows(EmptyResultDataAccessException.class, () -> jdbc.getAuthorById(1));
     }
 
     @Test
     void shouldReturnCorrectListOfAuthors(){
-        final List<Author> expected = List.of(new Author(1, "James Joyce"));
+        final List<Author> expected = List.of(new Author(1, "James Joyce"),
+                new Author(2, "Michel Foucault"));
+        jdbc.insert(new Author(2, "Michel Foucault"));
         final List<Author> actual = jdbc.getAll();
 
         assertEquals(expected, actual);
