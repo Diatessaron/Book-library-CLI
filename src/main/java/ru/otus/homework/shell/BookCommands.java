@@ -1,26 +1,20 @@
 package ru.otus.homework.shell;
 
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
-import ru.otus.homework.dao.AuthorDao;
 import ru.otus.homework.dao.BookDao;
-import ru.otus.homework.dao.GenreDao;
-import ru.otus.homework.domain.Author;
 import ru.otus.homework.domain.Book;
-import ru.otus.homework.domain.Genre;
+import ru.otus.homework.service.BookInsertUpdateService;
 
 @ShellComponent
 public class BookCommands {
     private final BookDao bookDao;
-    private final AuthorDao authorDao;
-    private final GenreDao genreDao;
+    private final BookInsertUpdateService bookInsertUpdateService;
 
-    public BookCommands(BookDao bookDao, AuthorDao authorDao, GenreDao genreDao) {
+    public BookCommands(BookDao bookDao, BookInsertUpdateService bookInsertUpdateService) {
         this.bookDao = bookDao;
-        this.authorDao = authorDao;
-        this.genreDao = genreDao;
+        this.bookInsertUpdateService = bookInsertUpdateService;
     }
 
     @ShellMethod(key = {"bi", "bInsert"}, value = "Insert book. Arguments: id, title, author, genre. " +
@@ -29,27 +23,9 @@ public class BookCommands {
                          @ShellOption("Title") String title,
                          @ShellOption("Author") String authorNameParameter,
                          @ShellOption("Genre") String genreNameParameter){
-        final String authorName = String.join(" ", authorNameParameter.split(","));
-        Author author;
-        try{
-            author = authorDao.getAuthorByName(authorName);
-        } catch (EmptyResultDataAccessException e){
-            author = new Author(authorDao.count()+1L, authorName);
-            authorDao.insert(author);
-        }
-
-        final String genreName = String.join(" ", genreNameParameter.split(","));
-        Genre genre;
-        try{
-            genre = genreDao.getGenreByName(genreName);
-        } catch (EmptyResultDataAccessException e){
-            genre = new Genre(genreDao.count()+1L, genreName);
-            genreDao.insert(genre);
-        }
-
-        final Book book = new Book(id, String.join(" ", title.split(",")), author, genre);
-        bookDao.insert(book);
-        return String.format("You successfully inserted a %s to repository", String.join(" ", title.split(",")));
+        bookInsertUpdateService.insertBook(id, title, authorNameParameter, genreNameParameter);
+        return String.format("You successfully inserted a %s to repository",
+                reformatString(title));
     }
 
     @ShellMethod(key = {"bbi", "bookById"}, value = "Get book by id")
@@ -60,19 +36,19 @@ public class BookCommands {
     @ShellMethod(key = {"bbt", "bookByTitle"}, value = "Get book by title. " +
             "Please, put comma instead of space in each argument")
     public String getBookByTitle(@ShellOption("Title") String title){
-        return bookDao.getBookByTitle(String.join(" ", title.split(","))).toString();
+        return bookDao.getBookByTitle(reformatString(title)).toString();
     }
 
     @ShellMethod(key = {"bba", "bookByAuthor"}, value = "Get book by author. " +
             "Please, put comma instead of space in each argument")
     public String getBookByAuthor(@ShellOption("Author") String author){
-        return bookDao.getBookByAuthor(String.join(" ", author.split(","))).toString();
+        return bookDao.getBookByAuthor(reformatString(author)).toString();
     }
 
     @ShellMethod(key = {"bbg", "bookByGenre"}, value = "Get book by genre. " +
             "Please, put comma instead of space in each argument")
     public String getBookByGenre(@ShellOption("Genre") String genre){
-        return bookDao.getBookByGenre(String.join(" ", genre.split(","))).toString();
+        return bookDao.getBookByGenre(reformatString(genre)).toString();
     }
 
     @ShellMethod(key = {"bga", "bGetAll"}, value = "Get all books")
@@ -86,27 +62,8 @@ public class BookCommands {
                          @ShellOption("Title") String title,
                          @ShellOption("Author") String authorNameParameter,
                          @ShellOption("Genre") String genreNameParameter){
-        final String authorName = String.join(" ", authorNameParameter.split(","));
-        Author author;
-        try{
-            author = authorDao.getAuthorByName(authorName);
-        } catch (EmptyResultDataAccessException e){
-            author = new Author(authorDao.count()+1L, authorName);
-            authorDao.insert(author);
-        }
-
-        final String genreName = String.join(" ", genreNameParameter.split(","));
-        Genre genre;
-        try{
-            genre = genreDao.getGenreByName(genreName);
-        } catch (EmptyResultDataAccessException e){
-            genre = new Genre(genreDao.count()+1L, genreName);
-            genreDao.insert(genre);
-        }
-
-        final Book book = new Book(id, String.join(" ", title.split(",")), author, genre);
-        bookDao.update(book);
-        return String.format("%s was updated", book.getTitle());
+        bookInsertUpdateService.updateBook(id, title, authorNameParameter, genreNameParameter);
+        return String.format("%s was updated", reformatString(title));
     }
 
     @ShellMethod(key = {"bd", "bDelete"}, value = "Delete book by id")
@@ -114,5 +71,9 @@ public class BookCommands {
         final Book book = bookDao.getBookById(id);
         bookDao.deleteById(id);
         return String.format("%s was deleted", book.getTitle());
+    }
+
+    private String reformatString(String str){
+        return String.join(" ", str.split(","));
     }
 }
