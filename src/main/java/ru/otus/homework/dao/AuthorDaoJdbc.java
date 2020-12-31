@@ -21,51 +21,51 @@ public class AuthorDaoJdbc implements AuthorDao{
     @Override
     public int count(){
         return namedParameterJdbcOperations.getJdbcOperations().queryForObject(
-                "select count(*) from author", Integer.class
+                "select count(*) from authors", Integer.class
         );
     }
 
     @Override
     public void insert(Author author) {
-        namedParameterJdbcOperations.update("insert into author (name) values (:name)",
+        namedParameterJdbcOperations.update("insert into authors (name) values (:name)",
                 Map.of("name", author.getName()));
     }
 
     @Override
     public Author getAuthorById(long id) {
         return namedParameterJdbcOperations.queryForObject(
-                "select id, name from author where id = :id", Map.of("id", id), new AuthorMapper()
+                "select id, name from authors where id = :id", Map.of("id", id), new AuthorMapper()
         );
     }
 
     @Override
     public Author getAuthorByName(String name) {
         return namedParameterJdbcOperations.queryForObject(
-                "select id, name from author where name = :name", Map.of("name", name), new AuthorMapper()
+                "select id, name from authors where name = :name", Map.of("name", name), new AuthorMapper()
         );
     }
 
     @Override
     public List<Author> getAll() {
-        return namedParameterJdbcOperations.query("select id, name from author", new AuthorMapper());
+        return namedParameterJdbcOperations.query("select id, name from authors", new AuthorMapper());
     }
 
     @Override
     public void update(Author author) {
-        namedParameterJdbcOperations.update("update author set name = :name where id = :id",
+        namedParameterJdbcOperations.update("update authors set name = :name where id = :id",
                 Map.of("name", author.getName(), "id", author.getId()));
     }
 
     @Override
     public void deleteById(long id) {
         namedParameterJdbcOperations.update(
-                "delete from author where id = :id", Map.of("id", id)
+                "delete from authors where id = :id", Map.of("id", id)
         );
     }
 
     private static class AuthorMapper implements RowMapper<Author> {
         @Override
-        public Author mapRow(ResultSet resultSet, int i) throws SQLException{
+        public Author mapRow(ResultSet resultSet, int i) throws SQLException {
             long id = resultSet.getLong("id");
             String name = resultSet.getString("name");
             return new Author(id, name);

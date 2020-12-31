@@ -1,10 +1,19 @@
 package ru.otus.homework.domain;
 
+import javax.persistence.*;
 import java.util.Objects;
 
+@Entity
+@Table(name = "authors")
 public class Author {
-    private final long id;
-    private final String name;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
+    @Column(name = "name")
+    private String name;
+
+    public Author() {
+    }
 
     public Author(long id, String name) {
         this.id = id;

@@ -1,10 +1,19 @@
 package ru.otus.homework.domain;
 
+import javax.persistence.*;
 import java.util.Objects;
 
+@Entity
+@Table(name = "genres")
 public class Genre {
-    private final long id;
-    private final String name;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
+    @Column(name = "name", nullable = false)
+    private String name;
+
+    public Genre() {
+    }
 
     public Genre(long id, String name) {
         this.id = id;

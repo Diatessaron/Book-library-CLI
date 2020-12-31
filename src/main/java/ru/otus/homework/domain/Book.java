@@ -1,12 +1,33 @@
 package ru.otus.homework.domain;
 
+import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+
+import javax.persistence.*;
 import java.util.Objects;
 
+@Entity
+@Table(name = "books")
 public class Book {
-    private final long id;
-    private final String title;
-    private final Author author;
-    private final Genre genre;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
+    @Column(name = "title")
+    private String title;
+    @Fetch(FetchMode.SELECT)
+    @BatchSize(size = 1)
+    @ManyToOne(targetEntity = Author.class, cascade = CascadeType.ALL)
+    @JoinColumn(name = "author_id")
+    private Author author;
+    @Fetch(FetchMode.SELECT)
+    @BatchSize(size = 1)
+    @ManyToOne(targetEntity = Genre.class, cascade = CascadeType.ALL)
+    @JoinColumn(name = "genre_id")
+    private Genre genre;
+
+    public Book() {
+    }
 
     public Book(long id, String title, Author author, Genre genre) {
         this.id = id;

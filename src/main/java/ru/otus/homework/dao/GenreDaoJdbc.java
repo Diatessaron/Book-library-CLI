@@ -21,45 +21,45 @@ public class GenreDaoJdbc implements GenreDao{
     @Override
     public int count(){
         return namedParameterJdbcOperations.getJdbcOperations().queryForObject(
-                "select count(*) from genre", Integer.class
+                "select count(*) from genres", Integer.class
         );
     }
 
     @Override
     public void insert(Genre genre) {
-        namedParameterJdbcOperations.update("insert into genre (name) values (:name)",
+        namedParameterJdbcOperations.update("insert into genres (name) values (:name)",
                 Map.of("name", genre.getName()));
     }
 
     @Override
     public Genre getGenreById(long id) {
         return namedParameterJdbcOperations.queryForObject(
-                "select id, name from genre where id = :id", Map.of("id", id), new GenreMapper()
+                "select id, name from genres where id = :id", Map.of("id", id), new GenreMapper()
         );
     }
 
     @Override
     public Genre getGenreByName(String name) {
         return namedParameterJdbcOperations.queryForObject(
-                "select id, name from genre where name = :name", Map.of("name", name), new GenreMapper()
+                "select id, name from genres where name = :name", Map.of("name", name), new GenreMapper()
         );
     }
 
     @Override
     public List<Genre> getAll(){
-        return namedParameterJdbcOperations.query("select id, name from genre", new GenreMapper());
+        return namedParameterJdbcOperations.query("select id, name from genres", new GenreMapper());
     }
 
     @Override
     public void update(Genre genre) {
-        namedParameterJdbcOperations.update("update genre set name = :name where id = :id",
+        namedParameterJdbcOperations.update("update genres set name = :name where id = :id",
                 Map.of("name", genre.getName(), "id", genre.getId()));
     }
 
     @Override
     public void deleteById(long id) {
         namedParameterJdbcOperations.update(
-                "delete from genre where id = :id", Map.of("id", id)
+                "delete from genres where id = :id", Map.of("id", id)
         );
     }
 

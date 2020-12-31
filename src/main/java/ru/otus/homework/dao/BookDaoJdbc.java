@@ -22,7 +22,7 @@ public class BookDaoJdbc implements BookDao{
 
     @Override
     public void insert(Book book) {
-        namedParameterJdbcOperations.update("insert into book (title, author_id, genre_id) " +
+        namedParameterJdbcOperations.update("insert into books (title, author_id, genre_id) " +
                         "values (:title, :author_id, :genre_id)",
                 Map.of("title", book.getTitle(), "author_id", book.getAuthor().getId(),
                         "genre_id", book.getGenre().getId()));
@@ -32,7 +32,7 @@ public class BookDaoJdbc implements BookDao{
     public Book getBookById(long id) {
         return namedParameterJdbcOperations.queryForObject(
                 "select b.id, b.title, a.id author_id, a.name author_name, g.id genre_id, g.name genre_name " +
-                        "from book b left join author a on b.author_id = a.id left join genre g on b.genre_id = g.id " +
+                        "from books b left join authors a on b.author_id = a.id left join genres g on b.genre_id = g.id " +
                         "where b.id = :id",
                 Map.of("id", id), new BookMapper()
         );
@@ -42,7 +42,7 @@ public class BookDaoJdbc implements BookDao{
     public Book getBookByTitle(String title) {
         return namedParameterJdbcOperations.queryForObject(
                 "select b.id, b.title, a.id author_id, a.name author_name, g.id genre_id, g.name genre_name " +
-                        "from book b left join author a on b.author_id = a.id left join genre g on b.genre_id = g.id " +
+                        "from books b left join authors a on b.author_id = a.id left join genres g on b.genre_id = g.id " +
                         "where title = :title",
                 Map.of("title", title),
                 new BookMapper()
@@ -53,7 +53,7 @@ public class BookDaoJdbc implements BookDao{
     public Book getBookByAuthor(String authorName) {
         return namedParameterJdbcOperations.queryForObject(
                 "select b.id, b.title, a.id author_id, a.name author_name, g.id genre_id, g.name genre_name " +
-                        "from book b left join author a on b.author_id = a.id left join genre g on b.genre_id = g.id " +
+                        "from books b left join authors a on b.author_id = a.id left join genres g on b.genre_id = g.id " +
                         "where a.name = :author_name", Map.of("author_name", authorName), new BookMapper()
         );
     }
@@ -61,29 +61,29 @@ public class BookDaoJdbc implements BookDao{
     @Override
     public Book getBookByGenre(String genreName) {
         return namedParameterJdbcOperations.queryForObject(
-          "select b.id, b.title, a.id author_id, a.name author_name, g.id genre_id, g.name genre_name " +
-                  "from book b left join author a on b.author_id = a.id left join genre g on b.genre_id = g.id " +
-                  "where g.name = :genre_name", Map.of("genre_name", genreName), new BookMapper()
+                "select b.id, b.title, a.id author_id, a.name author_name, g.id genre_id, g.name genre_name " +
+                        "from books b left join authors a on b.author_id = a.id left join genres g on b.genre_id = g.id " +
+                        "where g.name = :genre_name", Map.of("genre_name", genreName), new BookMapper()
         );
     }
 
     @Override
     public List<Book> getAll() {
         return namedParameterJdbcOperations.query("select b.id, b.title, a.id author_id, a.name author_name, " +
-                "g.id genre_id, g.name genre_name from book b left join author a on b.author_id = a.id " +
-                "left join genre g on b.genre_id = g.id", new BookMapper());
+                "g.id genre_id, g.name genre_name from books b left join authors a on b.author_id = a.id " +
+                "left join genres g on b.genre_id = g.id", new BookMapper());
     }
 
     @Override
     public void update(Book book) {
-        namedParameterJdbcOperations.update("update book set title = :title, author_id = :author_id, " +
+        namedParameterJdbcOperations.update("update books set title = :title, author_id = :author_id, " +
                 "genre_id = :genre_id where id = :id", Map.of("title", book.getTitle(),
-            "author_id", book.getAuthor().getId(), "genre_id", book.getGenre().getId(), "id", book.getId()));
+                "author_id", book.getAuthor().getId(), "genre_id", book.getGenre().getId(), "id", book.getId()));
     }
 
     @Override
     public void deleteById(long id) {
-        namedParameterJdbcOperations.update("delete from book where id = :id", Map.of("id", id));
+        namedParameterJdbcOperations.update("delete from books where id = :id", Map.of("id", id));
     }
 
     private static class BookMapper implements RowMapper<Book> {
