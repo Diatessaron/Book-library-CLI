@@ -25,7 +25,8 @@ public class AuthorCommands {
 
     @ShellMethod(key = {"abi", "authorById"}, value = "Get author by id")
     public String getAuthorById(@ShellOption("Id") long id){
-        return authorRepository.getAuthorById(id).toString();
+        return authorRepository.getAuthorById(id).orElseThrow(
+                () -> new IllegalArgumentException("Incorrect id")).toString();
     }
 
     @ShellMethod(key = {"abn", "authorByName"}, value = "Get author by name. " +

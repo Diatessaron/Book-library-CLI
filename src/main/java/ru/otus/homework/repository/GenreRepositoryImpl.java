@@ -49,7 +49,6 @@ public class GenreRepositoryImpl implements GenreRepository{
         return query.getSingleResult();
     }
 
-    //TODO: factor to solve N+1 and check other
     @Transactional(readOnly = true)
     @Override
     public List<Genre> getAll() {

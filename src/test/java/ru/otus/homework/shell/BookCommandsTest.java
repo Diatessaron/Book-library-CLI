@@ -86,7 +86,7 @@ class BookCommandsTest {
     @Test
     void testGetBookByIdByMessageComparison() {
         when(bookRepository.getBookById(1L)).thenReturn(Optional.of(ulysses));
-        final String expected = Optional.of(ulysses).toString();
+        final String expected = ulysses.toString();
         final String actual = shell.evaluate(() -> "bookById 1").toString();
 
         assertEquals(expected, actual);
@@ -115,6 +115,15 @@ class BookCommandsTest {
         when(bookRepository.getBookByGenre(ulysses.getGenre().getName())).thenReturn(ulysses);
         final String expected = ulysses.toString();
         final String actual = shell.evaluate(() -> "bookByGenre Modernist,novel").toString();
+
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    void testGetBookByCommentByMessageComparison(){
+        when(bookRepository.getBookByComment("Published in 1922")).thenReturn(ulysses);
+        final String expected = ulysses.toString();
+        final String actual = shell.evaluate(() -> "bookByComment Published,in,1922").toString();
 
         assertEquals(expected, actual);
     }

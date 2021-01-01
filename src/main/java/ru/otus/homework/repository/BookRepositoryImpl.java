@@ -40,7 +40,7 @@ public class BookRepositoryImpl implements BookRepository{
     @Override
     public Book getBookByTitle(String title) {
         final TypedQuery<Book> query = em.createQuery
-                ("select b from Book b where b.title = :title", Book.class);
+                ("select b from Book b join fetch b.comments where b.title = :title", Book.class);
         query.setParameter("title", title);
         return query.getSingleResult();
     }
@@ -49,7 +49,7 @@ public class BookRepositoryImpl implements BookRepository{
     @Override
     public Book getBookByAuthor(String author) {
         final TypedQuery<Book> query = em.createQuery
-                ("select b from Book b where b.author.name = :author", Book.class);
+                ("select b from Book b join fetch b.comments where b.author.name = :author", Book.class);
         query.setParameter("author", author);
         return query.getSingleResult();
     }
@@ -58,13 +58,22 @@ public class BookRepositoryImpl implements BookRepository{
     @Override
     public Book getBookByGenre(String genre) {
         final TypedQuery<Book> query = em.createQuery
-                ("select b from Book b where b.genre.name = :genre", Book.class);
+                ("select b from Book b join fetch b.comments where b.genre.name = :genre", Book.class);
         query.setParameter("genre", genre);
         return query.getSingleResult();
     }
 
     @Transactional(readOnly = true)
-    //TODO: factor to solve N+1 and check other
+    @Override
+    public Book getBookByComment(String comment){
+        final TypedQuery<Book> query = em.createQuery(
+                "select b from Book b join fetch b.comments c where c.content = :content", Book.class
+        );
+        query.setParameter("content", comment);
+        return query.getSingleResult();
+    }
+
+    @Transactional(readOnly = true)
     @Override
     public List<Book> getAll() {
         return em.createQuery("select b from Book b", Book.class).getResultList();
@@ -84,6 +93,20 @@ public class BookRepositoryImpl implements BookRepository{
 
         final Author author = book.getAuthor();
         final Genre genre = book.getGenre();
+
+        for(int i=0; i<book.getComments().size(); i++){
+            final Query nativeQuery = em.createNativeQuery
+                    ("update comments set content = ? where book_id = ? and id = ?");
+            nativeQuery.setParameter(1, book.getComments().get(i).getContent());
+            nativeQuery.setParameter(2, book.getId());
+            nativeQuery.setParameter(3, book.getComments().get(i).getId());
+            nativeQuery.executeUpdate();
+        }
+
+        final Query nativeQuery = em.createNativeQuery
+                ("update comments set book_id = ? where book_id is null");
+        nativeQuery.setParameter(1, book.getId());
+        nativeQuery.executeUpdate();
 
         if(author.getId()==0)
             em.persist(author);

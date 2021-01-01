@@ -23,7 +23,7 @@ class AuthorRepositoryImplTest {
     @Autowired
     private TestEntityManager em;
 
-    public final Author jamesJoyce = new Author(1, "James Joyce");
+    public final Author jamesJoyce = new Author(1L, "James Joyce");
 
     @Test
     void testCountMethod() {

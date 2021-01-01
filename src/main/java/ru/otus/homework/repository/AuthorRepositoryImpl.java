@@ -50,7 +50,6 @@ public class AuthorRepositoryImpl implements AuthorRepository{
     }
 
     @Transactional(readOnly = true)
-    //TODO: factor to solve N+1 and check other
     @Override
     public List<Author> getAll() {
         return em.createQuery("select a from Author a", Author.class).getResultList();

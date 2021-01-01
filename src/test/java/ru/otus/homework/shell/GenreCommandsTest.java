@@ -23,11 +23,11 @@ class GenreCommandsTest {
 
     @Autowired
     private Shell shell;
-    private final Genre novel = new Genre(1, "Modernist novel");
+    private final Genre novel = new Genre(1L, "Modernist novel");
 
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
-    void testInsertMethodByTimesOfDaoInvocation() {
+    void testInsertMethodByTimesOfRepositoryInvocation() {
         shell.evaluate(() -> "gInsert 2 Philosophy");
 
         verify(genreRepository, times(1)).save(new Genre(2, "Philosophy"));
@@ -45,17 +45,17 @@ class GenreCommandsTest {
     @Test
     void testGetGenreByIdByMessageComparison() {
         when(genreRepository.getGenreById(1)).thenReturn(Optional.of(novel));
-        final String expected = Optional.of(novel).toString();
+        final String expected = novel.toString();
         final String actual = shell.evaluate(() -> "genreById 1").toString();
 
         assertEquals(expected, actual);
     }
 
     @Test
-    void testGetAuthorByNameByMessageComparison() {
+    void testGetGenreByNameByMessageComparison() {
         when(genreRepository.getGenreByName(novel.getName())).thenReturn(novel);
         final String expected = novel.toString();
-        final String actual = shell.evaluate(() -> "genreByTitle Modernist,novel").toString();
+        final String actual = shell.evaluate(() -> "genreByName Modernist,novel").toString();
 
         assertEquals(expected, actual);
     }

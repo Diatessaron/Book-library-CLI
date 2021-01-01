@@ -46,7 +46,7 @@ class AuthorCommandsTest {
     @Test
     void testGetAuthorByIdByMessageComparison() {
         when(authorRepository.getAuthorById(1)).thenReturn(Optional.of(jamesJoyce));
-        final String expected = Optional.of(jamesJoyce).toString();
+        final String expected = jamesJoyce.toString();
         final String actual = shell.evaluate(() -> "authorById 1").toString();
 
         assertEquals(expected, actual);

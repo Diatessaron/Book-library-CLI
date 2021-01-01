@@ -14,24 +14,25 @@ public class GenreCommands {
         this.genreRepository = genreRepository;
     }
 
-    @ShellMethod(key = {"gi", "gInsert"}, value = "Insert genre. Arguments: id, title. " +
+    @ShellMethod(key = {"gi", "gInsert"}, value = "Insert genre. Arguments: id, name. " +
             "Please, put comma instead of space in each argument")
     public String insert(@ShellOption("Id") long id,
-                         @ShellOption("Title") String title){
-        final Genre genre = new Genre(id, String.join(" ", title.split(",")));
+                         @ShellOption("Name") String name){
+        final Genre genre = new Genre(id, String.join(" ", name.split(",")));
         genreRepository.save(genre);
         return String.format("You successfully saved a %s to repository", genre.getName());
     }
 
-    @ShellMethod(key = {"gbi", "genreById"}, value = "Get genre by id")
+    @ShellMethod(key = {"gbi", "genreById", "gById"}, value = "Get genre by id")
     public String getGenreById(@ShellOption("Id") long id){
-        return genreRepository.getGenreById(id).toString();
+        return genreRepository.getGenreById(id).orElseThrow
+                (() -> new IllegalArgumentException("Incorrect id")).toString();
     }
 
-    @ShellMethod(key = {"gbt", "genreByTitle"}, value = "Get genre by title. " +
+    @ShellMethod(key = {"gbn", "genreByName", "gByName"}, value = "Get genre by name. " +
             "Please, put comma instead of space in each argument")
-    public String getGenreByTitle(@ShellOption("Title") String title){
-        return genreRepository.getGenreByName(String.join(" ", title.split(","))).toString();
+    public String getGenreByName(@ShellOption("Name") String name){
+        return genreRepository.getGenreByName(String.join(" ", name.split(","))).toString();
     }
 
     @ShellMethod(key = {"gga", "gGetAll"}, value = "Get all genres")
@@ -39,7 +40,7 @@ public class GenreCommands {
         return genreRepository.getAll().toString();
     }
 
-    @ShellMethod(key = {"gu", "gUpdate"}, value = "Update genre in repository. Arguments: id, title. " +
+    @ShellMethod(key = {"gu", "gUpdate"}, value = "Update genre in repository. Arguments: id, name. " +
             "Please, put comma instead of space in each argument")
     public String update(@ShellOption("Id") long id,
                          @ShellOption("Title") String title){

@@ -30,7 +30,8 @@ public class BookCommands {
 
     @ShellMethod(key = {"bbi", "bookById"}, value = "Get book by id")
     public String getBookById(@ShellOption("Id") long id){
-        return bookRepository.getBookById(id).toString();
+        return bookRepository.getBookById(id).orElseThrow(
+                () -> new IllegalArgumentException("Incorrect book id")).toString();
     }
 
     @ShellMethod(key = {"bbt", "bookByTitle"}, value = "Get book by title. " +
@@ -49,6 +50,12 @@ public class BookCommands {
             "Please, put comma instead of space in each argument")
     public String getBookByGenre(@ShellOption("Genre") String genre){
         return bookRepository.getBookByGenre(reformatString(genre)).toString();
+    }
+
+    @ShellMethod(key = {"bbc", "bByComment", "bookByComment"}, value = "Get book by comment. " +
+                    "Please, put comma instead of space in each argument")
+    public String getBookByComment(@ShellOption("Comment") String commentContent){
+        return bookRepository.getBookByComment(reformatString(commentContent)).toString();
     }
 
     @ShellMethod(key = {"bga", "bGetAll"}, value = "Get all books")
