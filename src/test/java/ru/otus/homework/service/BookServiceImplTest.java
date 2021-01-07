@@ -6,26 +6,35 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
+import ru.otus.homework.domain.Author;
 import ru.otus.homework.domain.Book;
+import ru.otus.homework.domain.Comment;
+import ru.otus.homework.domain.Genre;
 import ru.otus.homework.repository.AuthorRepositoryImpl;
 import ru.otus.homework.repository.BookRepositoryImpl;
 import ru.otus.homework.repository.GenreRepositoryImpl;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
-@Import({BookInsertUpdateServiceImpl.class, BookRepositoryImpl.class,
+@Import({BookServiceImpl.class, BookRepositoryImpl.class,
         AuthorRepositoryImpl.class, GenreRepositoryImpl.class})
-class BookInsertUpdateServiceImplTest {
+class BookServiceImplTest {
     @Autowired
-    private BookInsertUpdateServiceImpl insertUpdateService;
+    private BookServiceImpl service;
     @Autowired
     private TestEntityManager em;
+
+    private final Book expectedUlysses = new Book(1L, "Ulysses", new Author(1, "James Joyce"),
+            new Genre(1, "Modernist novel"));
 
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     @Test
     void testSaveBookMethodWithParameters() {
-        insertUpdateService.saveBook("Discipline and Punish", "Michel Foucault",
+        service.saveBook("Discipline and Punish", "Michel Foucault",
                 "Philosophy");
 
         final Book actualBook = em.find(Book.class, 2L);
@@ -39,7 +48,7 @@ class BookInsertUpdateServiceImplTest {
 
     @Test
     void testSaveBookMethodWithOldAuthorAndGenre(){
-        insertUpdateService.saveBook("A Portrait of the Artist as a Young Man",
+        service.saveBook("A Portrait of the Artist as a Young Man",
                 "James Joyce", "Modernist novel");
 
         final Book actualBook = em.find(Book.class, 2L);
@@ -51,10 +60,59 @@ class BookInsertUpdateServiceImplTest {
                 .matches(s -> s.getGenre().getId()==1);
     }
 
+    @Test
+    void shouldReturnCorrectBookById() {
+        final Book actual = service.getBookById(1L);
+
+        assertEquals(expectedUlysses, actual);
+    }
+
+    @Test
+    void shouldReturnCorrectBookByTitle() {
+        final Book actual = service.getBookByTitle(expectedUlysses.getTitle());
+
+        assertEquals(expectedUlysses, actual);
+    }
+
+    @Test
+    void shouldReturnCorrectBookByAuthor() {
+        final Book actual = service.getBookByAuthor(expectedUlysses.getAuthor().getName());
+
+        assertEquals(expectedUlysses, actual);
+    }
+
+    @Test
+    void shouldReturnCorrectBookByGenre() {
+        final Book actual = service.getBookByGenre(expectedUlysses.getGenre().getName());
+
+        assertEquals(expectedUlysses, actual);
+    }
+
+    @Test
+    void shouldReturnCorrectBookByComment() {
+        final Book actual = service.getBookByComment("Published in 1922");
+
+        assertEquals(expectedUlysses, actual);
+    }
+
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
+    @Test
+    void shouldReturnCorrectListOfBooks() {
+        final Author author = new Author(0, "Michel Foucault");
+        final Genre genre = new Genre(0, "Philosophy");
+        final Book book = new Book(0, "Discipline And Punish", author, genre);
+        final List<Book> expected = List.of(expectedUlysses, book);
+
+        service.saveBook("Discipline And Punish", "Michel Foucault", "Philosophy");
+        final List<Book> actual = service.getAll();
+
+        assertThat(actual).isNotNull().matches(a -> a.size() == expected.size());
+    }
+
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     @Test
     void testUpdateBookMethodWithParameters() {
-        insertUpdateService.updateBook(1L, "Discipline and Punish", "Michel Foucault",
+        service.updateBook(1L, "Discipline and Punish", "Michel Foucault",
                 "Philosophy");
 
         final Book actualBook = em.find(Book.class, 1L);
@@ -67,8 +125,8 @@ class BookInsertUpdateServiceImplTest {
     }
 
     @Test
-    void testUpdateBookMethodWithOldAuthorAndGenre(){
-        insertUpdateService.updateBook(1L, "A Portrait of the Artist as a Young Man",
+    void testUpdateBookMethodWithOldAuthorAndGenre() {
+        service.updateBook(1L, "A Portrait of the Artist as a Young Man",
                 "James Joyce", "Modernist novel");
 
         final Book actualBook = em.find(Book.class, 1L);
@@ -78,5 +136,13 @@ class BookInsertUpdateServiceImplTest {
                 .matches(s -> s.getAuthor().getId()==1)
                 .matches(s -> s.getGenre().getName().equals("Modernist novel"))
                 .matches(s -> s.getGenre().getId()==1);
+    }
+
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
+    @Test
+    void commentShouldBeDeletedBeforeBookDeletionAndCheckCorrectBookDeletion(){
+        service.deleteBookById(1L);
+        assertNull(em.find(Comment.class, 1L));
+        assertThrows(IllegalArgumentException.class, () -> service.getBookById(1L));
     }
 }

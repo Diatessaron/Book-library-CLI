@@ -6,8 +6,10 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
+import ru.otus.homework.domain.Author;
 import ru.otus.homework.domain.Book;
 import ru.otus.homework.domain.Comment;
+import ru.otus.homework.domain.Genre;
 
 import javax.persistence.NoResultException;
 import java.util.List;
@@ -23,7 +25,9 @@ class CommentRepositoryImplTest {
     @Autowired
     private TestEntityManager em;
 
-    private Comment ulyssesComment = new Comment(1L, "Published in 1922");
+    private final Book ulysses = new Book(1L, "Ulysses", new Author(1L, "James Joyce"),
+            new Genre(1L, "Modernist novel"));
+    private final Comment ulyssesComment = new Comment(1L, "Published in 1922", ulysses);
 
     @Test
     void testCountMethod() {
@@ -35,7 +39,12 @@ class CommentRepositoryImplTest {
 
     @Test
     void testSaveByComparing() {
-        final Comment expected = new Comment(0L, "Published in 1975");
+        final Author foucault = new Author(0, "Michel Foucault");
+        final Genre philosophy = new Genre(0, "Philosophy");
+        final Book book = new Book(0, "Discipline and Punish", foucault,
+                philosophy);
+
+        final Comment expected = new Comment(0L, "Published in 1975", book);
         repository.save(expected);
         final Comment actual = repository.getCommentById(2L).orElseThrow(() ->
                 new IllegalArgumentException("Incorrect id"));
@@ -45,7 +54,13 @@ class CommentRepositoryImplTest {
 
     @Test
     void shouldHavePositiveId() {
-        final Comment comment = new Comment(0L, "Published in 1975");
+        final Author foucault = new Author(0, "Michel Foucault");
+        final Genre philosophy = new Genre(0, "Philosophy");
+
+        final Book book = new Book(0, "Discipline and Punish", foucault,
+                philosophy);
+
+        final Comment comment = new Comment(0L, "Published in 1975", book);
         repository.save(comment);
 
         assertThat(comment.getId()).isPositive();
@@ -53,17 +68,25 @@ class CommentRepositoryImplTest {
 
     @Test
     void shouldHaveCorrectData(){
-        final Comment comment = new Comment(0L, "Published in 1975");
+        final Author foucault = new Author(0, "Michel Foucault");
+        final Genre philosophy = new Genre(0, "Philosophy");
+        final Book book = new Book(0, "Discipline and Punish", foucault,
+                philosophy);
+        final Comment comment = new Comment(0L, "Published in 1975", book);
         repository.save(comment);
+
         final Comment actualComment = em.find(Comment.class, comment.getId());
 
-        assertThat(actualComment).isNotNull().matches(s -> !s.getContent().equals(""))
-                .matches(s -> s.getContent().equals("Published in 1975"))
-                .matches(s -> s.getId()==2L);
+        assertThat(actualComment).isNotNull().matches(c -> !c.getContent().equals(""))
+                .matches(c -> c.getContent().equals("Published in 1975"))
+                .matches(c -> c.getId()==2L)
+                .matches(c -> c.getBook() != null)
+                .matches(c -> c.getBook().toString().equals(book.toString()));
     }
 
     @Test
     void shouldReturnCorrectCommentById() {
+        repository.save(ulyssesComment);
         final Comment actual = repository.getCommentById(1L).orElseThrow(() ->
                 new IllegalArgumentException("Incorrect id"));
 
@@ -71,7 +94,8 @@ class CommentRepositoryImplTest {
     }
 
     @Test
-    void shouldReturnCorrectCommentByName() {
+    void shouldReturnCorrectCommentByContent() {
+        repository.save(ulyssesComment);
         final Comment actual = repository.getCommentByContent(ulyssesComment.getContent());
 
         assertEquals(ulyssesComment, actual);
@@ -85,7 +109,12 @@ class CommentRepositoryImplTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     @Test
     void shouldReturnCorrectListOfComments(){
-        final Comment disciplineAndPunishComment = new Comment(2L, "Published in 1975");
+        final Author foucault = new Author(0, "Michel Foucault");
+        final Genre philosophy = new Genre(0, "Philosophy");
+        final Book book = new Book(0, "Discipline and Punish", foucault,
+                philosophy);
+
+        final Comment disciplineAndPunishComment = new Comment(2L, "Published in 1975", book);
         final List<Comment> expected = List.of(this.ulyssesComment, disciplineAndPunishComment);
 
         repository.save(disciplineAndPunishComment);
@@ -97,7 +126,7 @@ class CommentRepositoryImplTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void testUpdateByComparing() {
-        final Comment expected = new Comment(1L, "Published in 1975");
+        final Comment expected = new Comment(1L, "Published in 1975", ulysses);
         repository.update(expected);
         final Comment actual = repository.getCommentById(1L).orElseThrow(() ->
                 new IllegalArgumentException("Incorrect id"));

@@ -28,10 +28,6 @@ class BookRepositoryImplTest {
     private final Book expectedUlysses = new Book(1, "Ulysses", new Author(1, "James Joyce"),
             new Genre(1, "Modernist novel"));
 
-    {
-        expectedUlysses.getComments().add(new Comment(1L, "Published in 1922"));
-    }
-
     @Test
     void testSaveByComparing() {
         final Author foucault = new Author(0, "Michel Foucault");
@@ -96,23 +92,6 @@ class BookRepositoryImplTest {
         assertEquals(expectedUlysses, actual);
     }
 
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
-    @Test
-    void shouldReturnCorrectBookByComment(){
-        final Comment comment = new Comment(0L, "Published in 1922");
-        expectedUlysses.getComments().add(comment);
-        em.merge(expectedUlysses);
-
-        final Book actual = repository.getBookByComment(expectedUlysses.getComments().get(0).getContent());
-
-        assertThat(actual).isNotNull().matches(b -> b.getId()==expectedUlysses.getId())
-                .matches(b -> !b.getTitle().equals(""))
-                .matches(b -> b.getTitle().equals(expectedUlysses.getTitle()))
-                .matches(b -> b.getAuthor().equals(expectedUlysses.getAuthor()))
-                .matches(b -> b.getGenre().equals(expectedUlysses.getGenre()))
-                .matches(b -> b.getComments().get(0).equals(expectedUlysses.getComments().get(0)));
-    }
-
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     @Test
     void shouldReturnCorrectListOfBooks() {
@@ -132,11 +111,19 @@ class BookRepositoryImplTest {
         final Author author = new Author(0L, "Michel Foucault");
         final Genre genre = new Genre(0L, "Philosophy");
         final Book expected = new Book(1L, "Discipline And Punish", author, genre);
-        expected.getComments().add(new Comment(1L, "New comment"));
-        repository.update(expected);
-        final Book actual = repository.getBookById(1L).get();
+        new Comment(1L, "New comment", expected);
+        repository.save(expected);
+        final Book actual = repository.getBookById(1L)
+                .orElseThrow(() -> new IllegalArgumentException("Incorrect id"));
 
-        assertEquals(expected, actual);
+        assertThat(actual).isNotNull().matches(b -> b.getId() == expected.getId(),
+                "Correct id")
+                .matches(b -> !b.getTitle().equals(""), "Blank title")
+                .matches(b -> b.getTitle().equals(expected.getTitle()), "Correct title")
+                .matches(b -> b.getAuthor().getName().equals(expected.getAuthor().getName()),
+                        "Correct author name")
+                .matches(b -> b.getGenre().getName().equals(expected.getGenre().getName()),
+                        "Correct genre name");
     }
 
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
@@ -163,10 +150,23 @@ class BookRepositoryImplTest {
         assertThat(books).isNotNull().hasSize(1)
                 .allMatch(b -> !b.getTitle().equals(""))
                 .allMatch(b -> b.getAuthor() != null)
-                .allMatch(b -> b.getGenre() != null)
-                .allMatch(b -> b.getComments() != null)
-                .allMatch(b -> b.getComments().size()>0);
+                .allMatch(b -> b.getGenre() != null);
 
-        assertThat(sessionFactory.getStatistics().getPrepareStatementCount()).isEqualTo(4L);
+        assertThat(sessionFactory.getStatistics().getPrepareStatementCount()).isEqualTo(3L);
+    }
+
+    @Test
+    void shouldReturnCorrectBookByTitleWithAllInfo() {
+        SessionFactory sessionFactory = em.getEntityManager().getEntityManagerFactory()
+                .unwrap(SessionFactory.class);
+        sessionFactory.getStatistics().setStatisticsEnabled(true);
+
+        final Book book = repository.getBookByTitle(expectedUlysses.getTitle());
+        assertThat(book).isNotNull().matches(b -> !b.getTitle().equals(""), "Blank title")
+                .matches(b -> b.getId() == expectedUlysses.getId(), "Correct id")
+                .matches(b -> b.getAuthor() != null, "Correct author")
+                .matches(b -> b.getGenre() != null, "Correct genre");
+
+        assertThat(sessionFactory.getStatistics().getPrepareStatementCount()).isEqualTo(3L);
     }
 }

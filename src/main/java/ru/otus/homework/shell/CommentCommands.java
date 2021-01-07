@@ -3,78 +3,57 @@ package ru.otus.homework.shell;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
-import ru.otus.homework.domain.Book;
-import ru.otus.homework.domain.Comment;
-import ru.otus.homework.repository.BookRepository;
-import ru.otus.homework.repository.CommentRepository;
+import ru.otus.homework.service.CommentService;
 
 @ShellComponent
 public class CommentCommands {
-    private CommentRepository commentRepository;
-    private BookRepository bookRepository;
+    private final CommentService service;
 
-    public CommentCommands(CommentRepository commentRepository, BookRepository bookRepository) {
-        this.commentRepository = commentRepository;
-        this.bookRepository = bookRepository;
+    public CommentCommands(CommentService service) {
+        this.service = service;
     }
 
-    @ShellMethod(key = {"ci", "cInsert"}, value = "Insert genre. Arguments: book id, comment. " +
-                        "Please, put comma instead of space in each argument")
+    @ShellMethod(key = {"ci", "cInsert"}, value = "Insert comment. Arguments: book id, comment. " +
+            "Please, put comma instead of space in each argument or simply put the arguments in quotes.")
     public String insert(@ShellOption("BookId") long bookId,
                          @ShellOption("Comment") String commentContent) {
-        final Comment comment = new Comment(0L, reformatString(commentContent));
-        commentRepository.save(comment);
-
-        final Book book = bookRepository.getBookById(bookId).orElseThrow(
-                () -> new IllegalArgumentException("Incorrect id"));
-        book.getComments().add(comment);
-        bookRepository.update(book);
-
-        return "You successfully added a comment to " + book.getTitle();
+        return service.saveComment(bookId, reformatString(commentContent));
     }
 
     @ShellMethod(key = {"cbi", "cById", "commentById"}, value = "Get comment by id")
     public String getCommentById(@ShellOption("Id") long id) {
-        return commentRepository.getCommentById(id).orElseThrow(
-                () -> new IllegalArgumentException("Incorrect id")).toString();
+        return service.getCommentById(id).toString();
     }
 
-    @ShellMethod(key = {"cbc", "cByContent", "commentByContent"}, value = "Get comment by content")
+    @ShellMethod(key = {"cbc", "cByContent", "commentByContent"}, value = "Get comment by content" +
+            "Please, put comma instead of space in each argument or simply put the arguments in quotes.")
     public String getCommentByContent(@ShellOption("Content") String content) {
-        return commentRepository.getCommentByContent(reformatString(content)).toString();
+        return service.getCommentByContent(reformatString(content)).toString();
+    }
+
+    @ShellMethod(key = {"cbb", "cByBook", "commentByBook"}, value = "Get comment by book title" +
+            "Please, put comma instead of space in each argument or simply put the arguments in quotes.")
+    public String getCommentByBook(@ShellOption("Book title") String bookTitle){
+        return service.getCommentsByBook(bookTitle).toString();
     }
 
     @ShellMethod(key = {"cga", "cGetAll"}, value = "Get all comments")
     public String getAll() {
-        return commentRepository.getAll().toString();
+        return service.getAll().toString();
     }
 
-    @ShellMethod(key = {"cu", "cUpdate"}, value = "Update genre in repository. Arguments: bookId, commentId, " +
-            "name. Please, put comma instead of space in each argument")
+    @ShellMethod(key = {"cu", "cUpdate"}, value = "Update comment in repository. Arguments: bookId, commentId, " +
+            "name. Please, put comma instead of space in each argument or simply put the arguments " +
+            "in quotes.")
     public String update(@ShellOption("BookId") long bookId,
                          @ShellOption("CommentId to replace") long commentId,
                          @ShellOption("Content") String commentContent) {
-        final Comment comment = new Comment(commentId, reformatString(commentContent));
-        commentRepository.update(comment);
-
-        final Book book = bookRepository.getBookById(bookId).orElseThrow(
-                () -> new IllegalArgumentException("Incorrect id"));
-        book.getComments().removeIf(c -> c.getId() == commentId);
-        book.getComments().add(comment);
-        bookRepository.update(book);
-
-        return book.getTitle() + " comment was updated";
+        return service.updateComment(bookId, commentId, commentContent);
     }
 
     @ShellMethod(key = {"cd", "cDelete"}, value = "Delete comment by id")
     public String deleteById(@ShellOption("Id") long id) {
-        final Comment comment = commentRepository.getCommentById(id).orElseThrow(
-                () -> new IllegalArgumentException("Incorrect comment id"));
-
-        final Book book = bookRepository.getBookByComment(comment.getContent());
-        commentRepository.deleteById(id);
-
-        return book.getTitle() + " comment was deleted";
+        return service.deleteById(id);
     }
 
     private String reformatString(String str){

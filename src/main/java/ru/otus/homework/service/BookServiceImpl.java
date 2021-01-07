@@ -2,6 +2,7 @@ package ru.otus.homework.service;
 
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.otus.homework.domain.Author;
 import ru.otus.homework.domain.Book;
 import ru.otus.homework.domain.Genre;
@@ -10,20 +11,22 @@ import ru.otus.homework.repository.BookRepository;
 import ru.otus.homework.repository.GenreRepository;
 
 import javax.persistence.NoResultException;
+import java.util.List;
 
 @Service
-public class BookInsertUpdateServiceImpl implements BookInsertUpdateService{
+public class BookServiceImpl implements BookService {
     private final BookRepository bookRepository;
     private final AuthorRepository authorRepository;
     private final GenreRepository genreRepository;
 
-    public BookInsertUpdateServiceImpl(BookRepository bookRepository,
-                                       AuthorRepository authorRepository, GenreRepository genreRepository) {
+    public BookServiceImpl(BookRepository bookRepository,
+                           AuthorRepository authorRepository, GenreRepository genreRepository) {
         this.bookRepository = bookRepository;
         this.authorRepository = authorRepository;
         this.genreRepository = genreRepository;
     }
 
+    @Transactional
     @Override
     public void saveBook(String title, String authorNameParameter, String genreNameParameter) {
         Author author = getAuthor(authorNameParameter);
@@ -33,13 +36,57 @@ public class BookInsertUpdateServiceImpl implements BookInsertUpdateService{
         bookRepository.save(book);
     }
 
+    @Transactional(readOnly = true)
+    @Override
+    public Book getBookById(long id) {
+        return bookRepository.getBookById(id).orElseThrow(
+                () -> new IllegalArgumentException("Incorrect book id"));
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public Book getBookByTitle(String title) {
+        return bookRepository.getBookByTitle(title);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public Book getBookByAuthor(String author) {
+        return bookRepository.getBookByAuthor(author);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public Book getBookByGenre(String genre) {
+        return bookRepository.getBookByGenre(genre);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public Book getBookByComment(String comment) {
+        return bookRepository.getBookByComment(comment);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<Book> getAll() {
+        return bookRepository.getAll();
+    }
+
+    @Transactional
     @Override
     public void updateBook(long id, String title, String authorNameParameter, String genreNameParameter) {
         Author author = getAuthor(authorNameParameter);
         Genre genre = getGenre(genreNameParameter);
         final Book book = new Book(id, title, author, genre);
 
-        bookRepository.update(book);
+        bookRepository.save(book);
+    }
+
+    @Transactional
+    @Override
+    public void deleteBookById(long id) {
+        bookRepository.deleteById(id);
     }
 
     private Author getAuthor(String authorName){

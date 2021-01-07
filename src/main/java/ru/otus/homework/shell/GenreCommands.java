@@ -4,57 +4,51 @@ import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
 import ru.otus.homework.domain.Genre;
-import ru.otus.homework.repository.GenreRepository;
+import ru.otus.homework.service.GenreService;
 
 @ShellComponent
 public class GenreCommands {
-    private final GenreRepository genreRepository;
+    private final GenreService genreService;
 
-    public GenreCommands(GenreRepository genreRepository) {
-        this.genreRepository = genreRepository;
+    public GenreCommands(GenreService genreService) {
+        this.genreService = genreService;
     }
 
-    @ShellMethod(key = {"gi", "gInsert"}, value = "Insert genre. Arguments: id, name. " +
-            "Please, put comma instead of space in each argument")
-    public String insert(@ShellOption("Id") long id,
-                         @ShellOption("Name") String name){
-        final Genre genre = new Genre(id, String.join(" ", name.split(",")));
-        genreRepository.save(genre);
-        return String.format("You successfully saved a %s to repository", genre.getName());
+    @ShellMethod(key = {"gi", "gInsert"}, value = "Insert genre. Arguments: name. " +
+            "Please, put comma instead of space in each argument or simply put the arguments in quotes.")
+    public String insert(@ShellOption("Name") String name){
+        return genreService.saveGenre(reformatString(name));
     }
 
     @ShellMethod(key = {"gbi", "genreById", "gById"}, value = "Get genre by id")
     public String getGenreById(@ShellOption("Id") long id){
-        return genreRepository.getGenreById(id).orElseThrow
-                (() -> new IllegalArgumentException("Incorrect id")).toString();
+        return genreService.getGenreById(id).toString();
     }
 
     @ShellMethod(key = {"gbn", "genreByName", "gByName"}, value = "Get genre by name. " +
-            "Please, put comma instead of space in each argument")
+            "Please, put comma instead of space in each argument or simply put the arguments in quotes.")
     public String getGenreByName(@ShellOption("Name") String name){
-        return genreRepository.getGenreByName(String.join(" ", name.split(","))).toString();
+        return genreService.getGenreByName(reformatString(name)).toString();
     }
 
     @ShellMethod(key = {"gga", "gGetAll"}, value = "Get all genres")
     public String getAll(){
-        return genreRepository.getAll().toString();
+        return genreService.getAll().toString();
     }
 
     @ShellMethod(key = {"gu", "gUpdate"}, value = "Update genre in repository. Arguments: id, name. " +
-            "Please, put comma instead of space in each argument")
+            "Please, put comma instead of space in each argument or simply put the arguments in quotes.")
     public String update(@ShellOption("Id") long id,
-                         @ShellOption("Title") String title){
-        final Genre genre = new Genre(id, String.join(" ", title.split(",")));
-        genreRepository.update(genre);
-        return String.format("%s was updated", genre.getName());
+                         @ShellOption("Name") String name){
+        return genreService.updateGenre(id, reformatString(name));
     }
 
     @ShellMethod(key = {"gd", "gDelete"}, value = "Delete genre by id")
     public String deleteById(@ShellOption("Id") long id){
-        final Genre genre = genreRepository.getGenreById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Incorrect id"));
-        genreRepository.deleteById(id);
+        return genreService.deleteGenreById(id);
+    }
 
-        return String.format("%s was deleted", genre.getName());
+    private String reformatString(String str){
+        return String.join(" ", str.split(","));
     }
 }

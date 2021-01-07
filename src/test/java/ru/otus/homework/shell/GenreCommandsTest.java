@@ -28,16 +28,16 @@ class GenreCommandsTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void testInsertMethodByTimesOfRepositoryInvocation() {
-        shell.evaluate(() -> "gInsert 2 Philosophy");
+        shell.evaluate(() -> "gInsert Philosophy");
 
-        verify(genreRepository, times(1)).save(new Genre(2, "Philosophy"));
+        verify(genreRepository, times(1)).save(new Genre(0L, "Philosophy"));
     }
 
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void shouldReturnCorrectMessage(){
         final String expected = "You successfully saved a philosophy to repository";
-        final String actual = shell.evaluate(() -> "gInsert 2 philosophy").toString();
+        final String actual = shell.evaluate(() -> "gInsert philosophy").toString();
 
         assertEquals(expected, actual);
     }

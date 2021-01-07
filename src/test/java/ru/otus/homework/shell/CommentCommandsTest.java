@@ -1,7 +1,6 @@
 package ru.otus.homework.shell;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.InOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -29,15 +28,18 @@ class CommentCommandsTest {
 
     @Autowired
     private Shell shell;
-    private final Comment comment = new Comment(1L, "Published in 1922");
+    private final Book ulysses = new Book(1, "Ulysses", new Author(1, "James Joyce"),
+            new Genre(1, "Modernist novel"));
+    private final Comment comment = new Comment(1L, "Published in 1922", ulysses);
 
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void testInsertMethodByTimesOfRepositoryInvocation() {
+        when(bookRepository.getBookById(ulysses.getId())).thenReturn(Optional.of(ulysses));
         shell.evaluate(() -> "ci 1 Second,comment");
 
         verify(commentRepository, times(1)).save
-                (new Comment(0L, "Second comment"));
+                (new Comment(0L, "Second comment", ulysses));
     }
 
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
@@ -82,14 +84,9 @@ class CommentCommandsTest {
 
     @Test
     void shouldReturnCorrectMessageAfterUpdateMethod() {
-        final Genre genre = new Genre(1L, "genre");
-        final Author author = new Author(1L, "author");
-        final Book book = new Book(1L, "Book", author, genre);
-        book.getComments().add(comment);
+        when(bookRepository.getBookById(1L)).thenReturn(Optional.of(ulysses));
 
-        when(bookRepository.getBookById(1L)).thenReturn(Optional.of(book));
-
-        final String expected = "Book comment was updated";
+        final String expected = "Ulysses comment was updated";
         final String actual = shell.evaluate(() -> "cUpdate 1 1 Good,book").toString();
 
         assertEquals(expected, actual);
@@ -98,15 +95,10 @@ class CommentCommandsTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void shouldReturnCorrectMessageAfterDeleteMethod() {
-        final Genre genre = new Genre(1L, "genre");
-        final Author author = new Author(1L, "author");
-        final Book book = new Book(1L, "Book", author, genre);
-        book.getComments().add(comment);
-
         when(commentRepository.getCommentById(1L)).thenReturn(Optional.of(comment));
-        when(bookRepository.getBookByComment(comment.getContent())).thenReturn(book);
+        when(bookRepository.getBookByComment(comment.getContent())).thenReturn(ulysses);
 
-        final String expected = "Book comment was deleted";
+        final String expected = "Ulysses comment was deleted";
         final String actual = shell.evaluate(() -> "cDelete 1").toString();
 
         assertEquals(expected, actual);

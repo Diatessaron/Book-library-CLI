@@ -1,7 +1,6 @@
 package ru.otus.homework.repository;
 
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 import ru.otus.homework.domain.Author;
 
 import javax.persistence.EntityManager;
@@ -16,13 +15,11 @@ public class AuthorRepositoryImpl implements AuthorRepository{
     @PersistenceContext
     private EntityManager em;
 
-    @Transactional(readOnly = true)
     @Override
     public long count() {
         return (long) em.createQuery("select count(a) from Author a").getSingleResult();
     }
 
-    @Transactional
     @Override
     public Author save(Author author) {
         if(author.getId()==0){
@@ -34,13 +31,11 @@ public class AuthorRepositoryImpl implements AuthorRepository{
         }
     }
 
-    @Transactional(readOnly = true)
     @Override
     public Optional<Author> getAuthorById(long id) {
         return Optional.ofNullable(em.find(Author.class, id));
     }
 
-    @Transactional(readOnly = true)
     @Override
     public Author getAuthorByName(String name) {
         final TypedQuery<Author> query = em.createQuery
@@ -49,13 +44,11 @@ public class AuthorRepositoryImpl implements AuthorRepository{
         return query.getSingleResult();
     }
 
-    @Transactional(readOnly = true)
     @Override
     public List<Author> getAll() {
         return em.createQuery("select a from Author a", Author.class).getResultList();
     }
 
-    @Transactional
     @Override
     public void update(Author author) {
         final Query query = em.createQuery("update Author a set a.name = :name where a.id = :id");
@@ -64,7 +57,6 @@ public class AuthorRepositoryImpl implements AuthorRepository{
         query.executeUpdate();
     }
 
-    @Transactional
     @Override
     public void deleteById(long id) {
         final Query query = em.createQuery("delete from Author a where a.id = :id");

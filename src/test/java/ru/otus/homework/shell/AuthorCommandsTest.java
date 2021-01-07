@@ -27,18 +27,18 @@ class AuthorCommandsTest {
 
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
-    void testInsertMethodByTimesOfDaoInvocation() {
-        shell.evaluate(() -> "aInsert 2 Michel,Foucault");
+    void testInsertMethodByTimesOfInvocation() {
+        shell.evaluate(() -> "aInsert Michel,Foucault");
 
         verify(authorRepository, times(1))
-                .save(new Author(2, "Michel Foucault"));
+                .save(new Author(0L, "Michel Foucault"));
     }
 
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void shouldReturnCorrectMessage(){
         final String expected = "You successfully saved a Michel Foucault to repository";
-        final String actual = shell.evaluate(() -> "aInsert 2 Michel,Foucault").toString();
+        final String actual = shell.evaluate(() -> "aInsert Michel,Foucault").toString();
 
         assertEquals(expected, actual);
     }

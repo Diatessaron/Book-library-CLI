@@ -42,6 +42,7 @@ class GenreRepositoryImplTest {
         assertThat(genre.getId()).isPositive();
     }
 
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void shouldHaveCorrectData(){
         final Genre genre = new Genre(0, "Modernist novel");

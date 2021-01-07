@@ -1,7 +1,6 @@
 package ru.otus.homework.repository;
 
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 import ru.otus.homework.domain.Genre;
 
 import javax.persistence.EntityManager;
@@ -16,13 +15,11 @@ public class GenreRepositoryImpl implements GenreRepository{
     @PersistenceContext
     private EntityManager em;
 
-    @Transactional(readOnly = true)
     @Override
     public long count() {
         return (long) em.createQuery("select count(g) from Genre g").getSingleResult();
     }
 
-    @Transactional
     @Override
     public Genre save(Genre genre) {
         if(genre.getId()==0){
@@ -34,13 +31,11 @@ public class GenreRepositoryImpl implements GenreRepository{
         }
     }
 
-    @Transactional(readOnly = true)
     @Override
     public Optional<Genre> getGenreById(long id) {
         return Optional.ofNullable(em.find(Genre.class, id));
     }
 
-    @Transactional(readOnly = true)
     @Override
     public Genre getGenreByName(String name) {
         final TypedQuery<Genre> query = em.createQuery
@@ -49,13 +44,11 @@ public class GenreRepositoryImpl implements GenreRepository{
         return query.getSingleResult();
     }
 
-    @Transactional(readOnly = true)
     @Override
     public List<Genre> getAll() {
         return em.createQuery("select g from Genre g", Genre.class).getResultList();
     }
 
-    @Transactional
     @Override
     public void update(Genre genre) {
         final Query query = em.createQuery("update Genre g set g.name = :name where g.id = :id");
@@ -64,7 +57,6 @@ public class GenreRepositoryImpl implements GenreRepository{
         query.executeUpdate();
     }
 
-    @Transactional
     @Override
     public void deleteById(long id) {
         final Query query = em.createQuery("delete from Genre g where g.id = :id");

@@ -2,10 +2,8 @@ package ru.otus.homework.shell;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
 import org.springframework.shell.Shell;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.otus.homework.domain.Author;
@@ -18,7 +16,7 @@ import ru.otus.homework.repository.GenreRepositoryImpl;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
