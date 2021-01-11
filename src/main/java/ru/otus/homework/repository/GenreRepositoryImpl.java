@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public class GenreRepositoryImpl implements GenreRepository{
+public class GenreRepositoryImpl implements GenreRepository {
     @PersistenceContext
     private EntityManager em;
 
@@ -22,11 +22,10 @@ public class GenreRepositoryImpl implements GenreRepository{
 
     @Override
     public Genre save(Genre genre) {
-        if(genre.getId()==0){
+        if (genre.getId() == 0) {
             em.persist(genre);
             return genre;
-        }
-        else{
+        } else {
             return em.merge(genre);
         }
     }
@@ -41,6 +40,7 @@ public class GenreRepositoryImpl implements GenreRepository{
         final TypedQuery<Genre> query = em.createQuery
                 ("select g from Genre g where g.name = :name", Genre.class);
         query.setParameter("name", name);
+
         return query.getSingleResult();
     }
 

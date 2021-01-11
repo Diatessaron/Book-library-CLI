@@ -3,10 +3,7 @@ package ru.otus.homework.repository;
 import org.springframework.stereotype.Repository;
 import ru.otus.homework.domain.Book;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.persistence.TypedQuery;
+import javax.persistence.*;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,46 +24,66 @@ public class BookRepositoryImpl implements BookRepository {
 
     @Override
     public Optional<Book> getBookById(long id) {
-        return Optional.ofNullable(em.find(Book.class, id));
+        final TypedQuery<Book> query = em.createQuery("select b from Book b join fetch b.genre g " +
+                "join fetch b.author a where b.id = :id", Book.class);
+        query.setParameter("id", id);
+
+        Book result = null;
+
+        try {
+            result = query.getSingleResult();
+        } catch (NoResultException ignored) {
+        }
+
+        return Optional.ofNullable(result);
     }
 
     @Override
     public Book getBookByTitle(String title) {
         final TypedQuery<Book> query = em.createQuery
-                ("select b from Book b where b.title = :title", Book.class);
+                ("select b from Book b join fetch b.genre g join fetch b.author a " +
+                        "where b.title = :title", Book.class);
         query.setParameter("title", title);
+
         return query.getSingleResult();
     }
 
     @Override
     public Book getBookByAuthor(String author) {
         final TypedQuery<Book> query = em.createQuery
-                ("select b from Book b where b.author.name = :author", Book.class);
+                ("select b from Book b join fetch b.genre g join fetch b.author a " +
+                        "where b.author.name = :author", Book.class);
         query.setParameter("author", author);
+
         return query.getSingleResult();
     }
 
     @Override
     public Book getBookByGenre(String genre) {
         final TypedQuery<Book> query = em.createQuery
-                ("select b from Book b where b.genre.name = :genre", Book.class);
+                ("select b from Book b join fetch b.genre g join fetch b.author a " +
+                        "where b.genre.name = :genre", Book.class);
         query.setParameter("genre", genre);
+
         return query.getSingleResult();
     }
 
     @Override
     public Book getBookByComment(String comment) {
         final TypedQuery<Book> query = em.createQuery(
-                "select b from Book b left join fetch Comment c on c.book = b " +
+                "select b from Book b join fetch b.genre g join fetch b.author a " +
+                        "left join fetch Comment c on c.book = b " +
                         "where c.content = :content", Book.class
         );
         query.setParameter("content", comment);
+
         return query.getSingleResult();
     }
 
     @Override
     public List<Book> getAll() {
-        return em.createQuery("select b from Book b", Book.class).getResultList();
+        return em.createQuery("select b from Book b join fetch b.genre g join fetch b.author a " +
+                "left join fetch Comment c on c.book = b", Book.class).getResultList();
     }
 
     @Override

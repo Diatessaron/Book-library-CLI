@@ -4,10 +4,7 @@ import org.springframework.stereotype.Repository;
 import ru.otus.homework.domain.Book;
 import ru.otus.homework.domain.Comment;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.persistence.TypedQuery;
+import javax.persistence.*;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,20 +30,34 @@ public class CommentRepositoryImpl implements CommentRepository {
 
     @Override
     public Optional<Comment> getCommentById(long id) {
-        return Optional.ofNullable(em.find(Comment.class, id));
+        final TypedQuery<Comment> query = em.createQuery("select c from Comment c join fetch " +
+                "c.book b join fetch b.genre g join fetch b.author a where c.id = :id", Comment.class);
+        query.setParameter("id", id);
+
+        Comment result = null;
+
+        try {
+            result = query.getSingleResult();
+        } catch (NoResultException ignored) {
+        }
+
+        return Optional.ofNullable(result);
     }
 
     @Override
     public Comment getCommentByContent(String content) {
         final TypedQuery<Comment> query = em.createQuery
-                ("select c from Comment c where c.content = :content", Comment.class);
+                ("select c from Comment c join fetch c.book b join fetch b.genre g join fetch " +
+                        "b.author a where c.content = :content", Comment.class);
         query.setParameter("content", content);
+
         return query.getSingleResult();
     }
 
     @Override
     public List<Comment> getCommentsByBook(Book book) {
-        final Query query = em.createQuery("select c from Comment c where c.book = :book");
+        final Query query = em.createQuery("select c from Comment c join fetch c.book b " +
+                "join fetch b.genre g join fetch b.author a where c.book = :book");
         query.setParameter("book", book);
 
         return query.getResultList();
@@ -54,7 +65,8 @@ public class CommentRepositoryImpl implements CommentRepository {
 
     @Override
     public List<Comment> getAll() {
-        return em.createQuery("select c from Comment c", Comment.class).getResultList();
+        return em.createQuery("select c from Comment c join fetch c.book b join fetch b.genre g " +
+                "join fetch b.author a", Comment.class).getResultList();
     }
 
     @Override

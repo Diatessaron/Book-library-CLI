@@ -152,7 +152,7 @@ class BookRepositoryImplTest {
                 .allMatch(b -> b.getAuthor() != null)
                 .allMatch(b -> b.getGenre() != null);
 
-        assertThat(sessionFactory.getStatistics().getPrepareStatementCount()).isEqualTo(3L);
+        assertThat(sessionFactory.getStatistics().getPrepareStatementCount()).isEqualTo(1L);
     }
 
     @Test
@@ -167,6 +167,6 @@ class BookRepositoryImplTest {
                 .matches(b -> b.getAuthor() != null, "Correct author")
                 .matches(b -> b.getGenre() != null, "Correct genre");
 
-        assertThat(sessionFactory.getStatistics().getPrepareStatementCount()).isEqualTo(3L);
+        assertThat(sessionFactory.getStatistics().getPrepareStatementCount()).isEqualTo(1L);
     }
 }

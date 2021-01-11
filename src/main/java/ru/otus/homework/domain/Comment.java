@@ -1,9 +1,5 @@
 package ru.otus.homework.domain;
 
-import org.hibernate.annotations.BatchSize;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
-
 import javax.persistence.*;
 import java.util.Objects;
 
@@ -15,9 +11,7 @@ public class Comment {
     private long id;
     @Column(name = "content")
     private String content;
-    @Fetch(FetchMode.SELECT)
-    @BatchSize(size = 5)
-    @ManyToOne(targetEntity = Book.class, cascade = CascadeType.ALL)
+    @ManyToOne(targetEntity = Book.class, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "book_id")
     private Book book;
 

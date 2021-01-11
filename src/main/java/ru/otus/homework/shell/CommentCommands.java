@@ -33,7 +33,7 @@ public class CommentCommands {
 
     @ShellMethod(key = {"cbb", "cByBook", "commentByBook"}, value = "Get comment by book title" +
             "Please, put comma instead of space in each argument or simply put the arguments in quotes.")
-    public String getCommentByBook(@ShellOption("Book title") String bookTitle){
+    public String getCommentByBook(@ShellOption("Book title") String bookTitle) {
         return service.getCommentsByBook(bookTitle).toString();
     }
 
@@ -56,7 +56,7 @@ public class CommentCommands {
         return service.deleteById(id);
     }
 
-    private String reformatString(String str){
+    private String reformatString(String str) {
         return String.join(" ", str.split(","));
     }
 }

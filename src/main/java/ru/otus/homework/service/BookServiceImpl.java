@@ -89,20 +89,20 @@ public class BookServiceImpl implements BookService {
         bookRepository.deleteById(id);
     }
 
-    private Author getAuthor(String authorName){
-        try{
+    private Author getAuthor(String authorName) {
+        try {
             return authorRepository.getAuthorByName(authorName);
-        } catch (EmptyResultDataAccessException | NoResultException e){
+        } catch (EmptyResultDataAccessException | NoResultException e) {
             Author author = new Author(0L, authorName);
             authorRepository.save(author);
             return author;
         }
     }
 
-    private Genre getGenre(String genreName){
-        try{
+    private Genre getGenre(String genreName) {
+        try {
             return genreRepository.getGenreByName(genreName);
-        } catch (EmptyResultDataAccessException | NoResultException e){
+        } catch (EmptyResultDataAccessException | NoResultException e) {
             Genre genre = new Genre(0L, genreName);
             genreRepository.save(genre);
             return genre;

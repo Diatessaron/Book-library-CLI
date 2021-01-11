@@ -1,9 +1,5 @@
 package ru.otus.homework.domain;
 
-import org.hibernate.annotations.BatchSize;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
-
 import javax.persistence.*;
 import java.util.Objects;
 
@@ -15,14 +11,10 @@ public class Book {
     private long id;
     @Column(name = "title")
     private String title;
-    @Fetch(FetchMode.SELECT)
-    @BatchSize(size = 5)
-    @ManyToOne(targetEntity = Author.class, cascade = CascadeType.ALL)
+    @ManyToOne(targetEntity = Author.class, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "author_id")
     private Author author;
-    @Fetch(FetchMode.SELECT)
-    @BatchSize(size = 5)
-    @ManyToOne(targetEntity = Genre.class, cascade = CascadeType.ALL)
+    @ManyToOne(targetEntity = Genre.class, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "genre_id")
     private Genre genre;
 

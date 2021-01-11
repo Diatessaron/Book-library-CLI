@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public class AuthorRepositoryImpl implements AuthorRepository{
+public class AuthorRepositoryImpl implements AuthorRepository {
     @PersistenceContext
     private EntityManager em;
 
@@ -22,11 +22,10 @@ public class AuthorRepositoryImpl implements AuthorRepository{
 
     @Override
     public Author save(Author author) {
-        if(author.getId()==0){
+        if (author.getId() == 0) {
             em.persist(author);
             return author;
-        }
-        else{
+        } else {
             return em.merge(author);
         }
     }
@@ -41,6 +40,7 @@ public class AuthorRepositoryImpl implements AuthorRepository{
         final TypedQuery<Author> query = em.createQuery
                 ("select a from Author a where a.name = :name", Author.class);
         query.setParameter("name", name);
+
         return query.getSingleResult();
     }
 

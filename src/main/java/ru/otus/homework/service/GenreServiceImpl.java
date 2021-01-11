@@ -8,7 +8,7 @@ import ru.otus.homework.repository.GenreRepository;
 import java.util.List;
 
 @Service
-public class GenreServiceImpl implements GenreService{
+public class GenreServiceImpl implements GenreService {
     private final GenreRepository genreRepository;
 
     public GenreServiceImpl(GenreRepository genreRepository) {
@@ -20,6 +20,7 @@ public class GenreServiceImpl implements GenreService{
     public String saveGenre(String name) {
         final Genre genre = new Genre(0L, name);
         genreRepository.save(genre);
+
         return String.format("You successfully saved a %s to repository", genre.getName());
     }
 
