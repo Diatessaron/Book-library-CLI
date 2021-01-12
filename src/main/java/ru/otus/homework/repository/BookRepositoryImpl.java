@@ -24,18 +24,7 @@ public class BookRepositoryImpl implements BookRepository {
 
     @Override
     public Optional<Book> getBookById(long id) {
-        final TypedQuery<Book> query = em.createQuery("select b from Book b join fetch b.genre g " +
-                "join fetch b.author a where b.id = :id", Book.class);
-        query.setParameter("id", id);
-
-        Book result = null;
-
-        try {
-            result = query.getSingleResult();
-        } catch (NoResultException ignored) {
-        }
-
-        return Optional.ofNullable(result);
+        return Optional.ofNullable(em.find(Book.class, id));
     }
 
     @Override
@@ -82,8 +71,8 @@ public class BookRepositoryImpl implements BookRepository {
 
     @Override
     public List<Book> getAll() {
-        return em.createQuery("select b from Book b join fetch b.genre g join fetch b.author a " +
-                "left join fetch Comment c on c.book = b", Book.class).getResultList();
+        return em.createQuery("select b from Book b join fetch b.genre g join fetch b.author a",
+                Book.class).getResultList();
     }
 
     @Override
