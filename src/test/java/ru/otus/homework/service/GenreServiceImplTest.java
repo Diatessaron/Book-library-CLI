@@ -7,16 +7,14 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.otus.homework.domain.Genre;
-import ru.otus.homework.repository.GenreRepositoryImpl;
 
-import javax.persistence.NoResultException;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
-@Import({GenreRepositoryImpl.class, GenreServiceImpl.class})
+@Import(GenreServiceImpl.class)
 class GenreServiceImplTest {
     @Autowired
     private GenreServiceImpl service;
@@ -52,7 +50,7 @@ class GenreServiceImplTest {
 
     @Test
     void shouldThrowExceptionAfterGetGenreByNameMethodInvocation(){
-        assertThrows(NoResultException.class, () -> service.getGenreByName("genre"));
+        assertThrows(IllegalArgumentException.class, () -> service.getGenreByName("genre"));
     }
 
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)

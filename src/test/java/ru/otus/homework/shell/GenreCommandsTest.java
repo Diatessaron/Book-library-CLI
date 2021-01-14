@@ -8,7 +8,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.shell.Shell;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.otus.homework.domain.Genre;
-import ru.otus.homework.repository.GenreRepositoryImpl;
+import ru.otus.homework.repository.GenreRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,7 +19,7 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 class GenreCommandsTest {
     @MockBean
-    private GenreRepositoryImpl genreRepository;
+    private GenreRepository genreRepository;
 
     @Autowired
     private Shell shell;
@@ -35,7 +35,7 @@ class GenreCommandsTest {
 
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
-    void shouldReturnCorrectMessage(){
+    void shouldReturnCorrectMessage() {
         final String expected = "You successfully saved a philosophy to repository";
         final String actual = shell.evaluate(() -> "gInsert philosophy").toString();
 
@@ -44,7 +44,7 @@ class GenreCommandsTest {
 
     @Test
     void testGetGenreByIdByMessageComparison() {
-        when(genreRepository.getGenreById(1)).thenReturn(Optional.of(novel));
+        when(genreRepository.findById(1L)).thenReturn(Optional.of(novel));
         final String expected = novel.toString();
         final String actual = shell.evaluate(() -> "genreById 1").toString();
 
@@ -53,7 +53,7 @@ class GenreCommandsTest {
 
     @Test
     void testGetGenreByNameByMessageComparison() {
-        when(genreRepository.getGenreByName(novel.getName())).thenReturn(novel);
+        when(genreRepository.findByName(novel.getName())).thenReturn(Optional.of(novel));
         final String expected = novel.toString();
         final String actual = shell.evaluate(() -> "genreByName Modernist,novel").toString();
 
@@ -62,7 +62,7 @@ class GenreCommandsTest {
 
     @Test
     void testGetAllByMessageComparison() {
-        when(genreRepository.getAll()).thenReturn(List.of(novel));
+        when(genreRepository.findAll()).thenReturn(List.of(novel));
         final String expected = List.of(novel).toString();
         final String actual = shell.evaluate(() -> "gGetAll").toString();
 
@@ -80,7 +80,7 @@ class GenreCommandsTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     @Test
     void shouldReturnCorrectMessageAfterDeleteMethod() {
-        when(genreRepository.getGenreById(1)).thenReturn(Optional.of(novel));
+        when(genreRepository.findById(1L)).thenReturn(Optional.of(novel));
 
         final String expected = "Modernist novel was deleted";
         final String actual = shell.evaluate(() -> "gDelete 1").toString();
@@ -90,13 +90,12 @@ class GenreCommandsTest {
 
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
-    void bookShouldBeDeletedBeforeGenreDeletion(){
-        final String genreName = novel.getName();
-        when(genreRepository.getGenreById(1)).thenReturn(Optional.of(novel));
+    void bookShouldBeDeletedBeforeGenreDeletion() {
+        when(genreRepository.findById(1L)).thenReturn(Optional.of(novel));
         shell.evaluate(() -> "gDelete 1");
 
         final InOrder inOrder = inOrder(genreRepository);
-        inOrder.verify(genreRepository).getGenreById(1);
-        inOrder.verify(genreRepository).deleteById(1);
+        inOrder.verify(genreRepository).findById(1L);
+        inOrder.verify(genreRepository).deleteById(1L);
     }
 }

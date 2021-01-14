@@ -1,22 +1,16 @@
 package ru.otus.homework.repository;
 
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import ru.otus.homework.domain.Genre;
 
-import java.util.List;
 import java.util.Optional;
 
-public interface GenreRepository {
-    long count();
+public interface GenreRepository extends JpaRepository<Genre, Long> {
+    Optional<Genre> findByName(String name);
 
-    Genre save(Genre genre);
-
-    Optional<Genre> getGenreById(long id);
-
-    Genre getGenreByName(String name);
-
-    List<Genre> getAll();
-
-    void update(Genre genre);
-
-    void deleteById(long id);
+    @Modifying
+    @Query("update Genre g set g.name = :name where g.id = :id")
+    void update(String name, long id);
 }

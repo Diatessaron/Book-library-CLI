@@ -8,11 +8,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.otus.homework.domain.Author;
 import ru.otus.homework.domain.Book;
-import ru.otus.homework.domain.Comment;
 import ru.otus.homework.domain.Genre;
-import ru.otus.homework.repository.AuthorRepositoryImpl;
-import ru.otus.homework.repository.BookRepositoryImpl;
-import ru.otus.homework.repository.GenreRepositoryImpl;
 
 import java.util.List;
 
@@ -20,8 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
-@Import({BookServiceImpl.class, BookRepositoryImpl.class,
-        AuthorRepositoryImpl.class, GenreRepositoryImpl.class})
+@Import(BookServiceImpl.class)
 class BookServiceImplTest {
     @Autowired
     private BookServiceImpl service;
@@ -41,13 +36,13 @@ class BookServiceImplTest {
         assertThat(actualBook).isNotNull().matches(s -> !s.getTitle().equals(""))
                 .matches(s -> s.getTitle().equals("Discipline and Punish"))
                 .matches(s -> s.getAuthor().getName().equals("Michel Foucault"))
-                .matches(s -> s.getAuthor().getId()==2)
+                .matches(s -> s.getAuthor().getId() == 2)
                 .matches(s -> s.getGenre().getName().equals("Philosophy"))
-                .matches(s -> s.getGenre().getId()==2);
+                .matches(s -> s.getGenre().getId() == 2);
     }
 
     @Test
-    void testSaveBookMethodWithOldAuthorAndGenre(){
+    void testSaveBookMethodWithOldAuthorAndGenre() {
         service.saveBook("A Portrait of the Artist as a Young Man",
                 "James Joyce", "Modernist novel");
 
@@ -55,9 +50,9 @@ class BookServiceImplTest {
         assertThat(actualBook).isNotNull().matches(s -> !s.getTitle().equals(""))
                 .matches(s -> s.getTitle().equals("A Portrait of the Artist as a Young Man"))
                 .matches(s -> s.getAuthor().getName().equals("James Joyce"))
-                .matches(s -> s.getAuthor().getId()==1)
+                .matches(s -> s.getAuthor().getId() == 1)
                 .matches(s -> s.getGenre().getName().equals("Modernist novel"))
-                .matches(s -> s.getGenre().getId()==1);
+                .matches(s -> s.getGenre().getId() == 1);
     }
 
     @Test
@@ -119,9 +114,9 @@ class BookServiceImplTest {
         assertThat(actualBook).isNotNull().matches(s -> !s.getTitle().equals(""))
                 .matches(s -> s.getTitle().equals("Discipline and Punish"))
                 .matches(s -> s.getAuthor().getName().equals("Michel Foucault"))
-                .matches(s -> s.getAuthor().getId()==2)
+                .matches(s -> s.getAuthor().getId() == 2)
                 .matches(s -> s.getGenre().getName().equals("Philosophy"))
-                .matches(s -> s.getGenre().getId()==2);
+                .matches(s -> s.getGenre().getId() == 2);
     }
 
     @Test
@@ -133,16 +128,8 @@ class BookServiceImplTest {
         assertThat(actualBook).isNotNull().matches(s -> !s.getTitle().equals(""))
                 .matches(s -> s.getTitle().equals("A Portrait of the Artist as a Young Man"))
                 .matches(s -> s.getAuthor().getName().equals("James Joyce"))
-                .matches(s -> s.getAuthor().getId()==1)
+                .matches(s -> s.getAuthor().getId() == 1)
                 .matches(s -> s.getGenre().getName().equals("Modernist novel"))
-                .matches(s -> s.getGenre().getId()==1);
-    }
-
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
-    @Test
-    void commentShouldBeDeletedBeforeBookDeletionAndCheckCorrectBookDeletion(){
-        service.deleteBookById(1L);
-        assertNull(em.find(Comment.class, 1L));
-        assertThrows(IllegalArgumentException.class, () -> service.getBookById(1L));
+                .matches(s -> s.getGenre().getId() == 1);
     }
 }

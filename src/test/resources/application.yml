@@ -7,6 +7,7 @@ spring:
     generate-ddl: false
     hibernate:
         ddl-auto: none
+
   shell:
     interactive:
       enabled: false

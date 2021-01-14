@@ -27,35 +27,35 @@ public class GenreServiceImpl implements GenreService {
     @Transactional(readOnly = true)
     @Override
     public Genre getGenreById(long id) {
-        return genreRepository.getGenreById(id).orElseThrow
+        return genreRepository.findById(id).orElseThrow
                 (() -> new IllegalArgumentException("Incorrect id"));
     }
 
     @Transactional(readOnly = true)
     @Override
     public Genre getGenreByName(String name) {
-        return genreRepository.getGenreByName(name);
+        return genreRepository.findByName(name).orElseThrow
+                (() -> new IllegalArgumentException("Incorrect name"));
     }
 
     @Transactional(readOnly = true)
     @Override
     public List<Genre> getAll() {
-        return genreRepository.getAll();
+        return genreRepository.findAll();
     }
 
     @Transactional
     @Override
     public String updateGenre(long id, String name) {
-        final Genre genre = new Genre(id, name);
-        genreRepository.update(genre);
+        genreRepository.update(name, id);
 
-        return String.format("%s was updated", genre.getName());
+        return String.format("%s was updated", name);
     }
 
     @Transactional
     @Override
     public String deleteGenreById(long id) {
-        final Genre genre = genreRepository.getGenreById(id)
+        final Genre genre = genreRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Incorrect id"));
         genreRepository.deleteById(id);
 
