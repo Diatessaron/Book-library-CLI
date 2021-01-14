@@ -7,48 +7,44 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.shell.Shell;
 import org.springframework.test.annotation.DirtiesContext;
-import ru.otus.homework.dao.BookDaoJdbc;
-import ru.otus.homework.dao.GenreDaoJdbc;
-import ru.otus.homework.domain.Author;
-import ru.otus.homework.domain.Book;
 import ru.otus.homework.domain.Genre;
+import ru.otus.homework.repository.GenreRepositoryImpl;
 
 import java.util.List;
+import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
 class GenreCommandsTest {
     @MockBean
-    private GenreDaoJdbc genreDaoJdbc;
-    @MockBean
-    private BookDaoJdbc bookDaoJdbc;
+    private GenreRepositoryImpl genreRepository;
 
     @Autowired
     private Shell shell;
-    private final Genre novel = new Genre(1, "Modernist novel");
+    private final Genre novel = new Genre(1L, "Modernist novel");
 
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
-    void testInsertMethodByTimesOfDaoInvocation() {
-        shell.evaluate(() -> "gInsert 2 philosophy");
+    void testInsertMethodByTimesOfRepositoryInvocation() {
+        shell.evaluate(() -> "gInsert Philosophy");
 
-        verify(genreDaoJdbc, times(1)).insert(new Genre(2, "philosophy"));
+        verify(genreRepository, times(1)).save(new Genre(0L, "Philosophy"));
     }
 
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void shouldReturnCorrectMessage(){
-        final String expected = "You successfully inserted a philosophy to repository";
-        final String actual = shell.evaluate(() -> "gInsert 2 philosophy").toString();
+        final String expected = "You successfully saved a philosophy to repository";
+        final String actual = shell.evaluate(() -> "gInsert philosophy").toString();
 
         assertEquals(expected, actual);
     }
 
     @Test
     void testGetGenreByIdByMessageComparison() {
-        when(genreDaoJdbc.getGenreById(1)).thenReturn(novel);
+        when(genreRepository.getGenreById(1)).thenReturn(Optional.of(novel));
         final String expected = novel.toString();
         final String actual = shell.evaluate(() -> "genreById 1").toString();
 
@@ -56,17 +52,17 @@ class GenreCommandsTest {
     }
 
     @Test
-    void testGetAuthorByNameByMessageComparison() {
-        when(genreDaoJdbc.getGenreByName(novel.getName())).thenReturn(novel);
+    void testGetGenreByNameByMessageComparison() {
+        when(genreRepository.getGenreByName(novel.getName())).thenReturn(novel);
         final String expected = novel.toString();
-        final String actual = shell.evaluate(() -> "genreByTitle Modernist,novel").toString();
+        final String actual = shell.evaluate(() -> "genreByName Modernist,novel").toString();
 
         assertEquals(expected, actual);
     }
 
     @Test
     void testGetAllByMessageComparison() {
-        when(genreDaoJdbc.getAll()).thenReturn(List.of(novel));
+        when(genreRepository.getAll()).thenReturn(List.of(novel));
         final String expected = List.of(novel).toString();
         final String actual = shell.evaluate(() -> "gGetAll").toString();
 
@@ -84,9 +80,7 @@ class GenreCommandsTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     @Test
     void shouldReturnCorrectMessageAfterDeleteMethod() {
-        when(genreDaoJdbc.getGenreById(1)).thenReturn(novel);
-        when(bookDaoJdbc.getBookByGenre(novel.getName())).thenReturn
-                (new Book(1, "Ulysses", new Author(1, "James Joyce"), novel));
+        when(genreRepository.getGenreById(1)).thenReturn(Optional.of(novel));
 
         final String expected = "Modernist novel was deleted";
         final String actual = shell.evaluate(() -> "gDelete 1").toString();
@@ -98,17 +92,11 @@ class GenreCommandsTest {
     @Test
     void bookShouldBeDeletedBeforeGenreDeletion(){
         final String genreName = novel.getName();
-        when(genreDaoJdbc.getGenreById(1)).thenReturn(novel);
-        when(bookDaoJdbc.getBookByGenre(genreName)).thenReturn
-                (new Book(1, "Ulysses", new Author(1, "James Joyce"), novel));
+        when(genreRepository.getGenreById(1)).thenReturn(Optional.of(novel));
         shell.evaluate(() -> "gDelete 1");
 
-        final long bookId = bookDaoJdbc.getBookByGenre(genreName).getId();
-
-        final InOrder inOrder = inOrder(bookDaoJdbc, genreDaoJdbc);
-        inOrder.verify(genreDaoJdbc).getGenreById(1);
-        inOrder.verify(bookDaoJdbc).getBookByGenre(genreName);
-        inOrder.verify(bookDaoJdbc).deleteById(bookId);
-        inOrder.verify(genreDaoJdbc).deleteById(1);
+        final InOrder inOrder = inOrder(genreRepository);
+        inOrder.verify(genreRepository).getGenreById(1);
+        inOrder.verify(genreRepository).deleteById(1);
     }
 }

@@ -6,20 +6,27 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.shell.Shell;
 import org.springframework.test.annotation.DirtiesContext;
-import ru.otus.homework.dao.BookDaoJdbc;
 import ru.otus.homework.domain.Author;
 import ru.otus.homework.domain.Book;
 import ru.otus.homework.domain.Genre;
+import ru.otus.homework.repository.AuthorRepositoryImpl;
+import ru.otus.homework.repository.BookRepositoryImpl;
+import ru.otus.homework.repository.GenreRepositoryImpl;
 
 import java.util.List;
+import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
 class BookCommandsTest {
     @MockBean
-    private BookDaoJdbc bookDaoJdbc;
+    private BookRepositoryImpl bookRepository;
+    @MockBean
+    private AuthorRepositoryImpl authorRepository;
+    @MockBean
+    private GenreRepositoryImpl genreRepository;
 
     @Autowired
     private Shell shell;
@@ -28,17 +35,26 @@ class BookCommandsTest {
 
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
-    void testInsertMethodByTimesOfDaoInvocation() {
-        shell.evaluate(() -> "bInsert 2 book author genre");
+    void testInsertMethodByTimesOfRepositoryInvocation() {
+        final Author author = new Author(0L, "author");
+        final Genre genre = new Genre(0L, "genre");
+        final Book book = new Book(0L, "book", author, genre);
+        when(authorRepository.getAuthorByName("author")).thenReturn(author);
+        when(genreRepository.getGenreByName("genre")).thenReturn(genre);
+        shell.evaluate(() -> "bInsert book author genre");
 
-        verify(bookDaoJdbc, times(1)).insert(new Book(2, "book", new Author(2, "author"), new Genre(2, "genre")));
+        verify(authorRepository, times(1)).getAuthorByName("author");
+        verify(genreRepository, times(1)).getGenreByName("genre");
+        verify(bookRepository, times(1)).save(book);
     }
 
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void shouldReturnCorrectMessageAfterInsertMethod(){
+        when(authorRepository.getAuthorByName("author")).thenReturn(new Author(0L, "author"));
+        when(genreRepository.getGenreByName("genre")).thenReturn(new Genre(0L, "genre"));
         final String expected = "You successfully inserted a book to repository";
-        final String actual = shell.evaluate(() -> "bInsert 2 book author genre").toString();
+        final String actual = shell.evaluate(() -> "bInsert book author genre").toString();
 
         assertEquals(expected, actual);
     }
@@ -46,8 +62,10 @@ class BookCommandsTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void shouldReturnCorrectMessageWithMultipleArgumentsAfterInsertMethod(){
+        when(authorRepository.getAuthorByName("author")).thenReturn(new Author(0L, "author"));
+        when(genreRepository.getGenreByName("genre")).thenReturn(new Genre(0L, "genre"));
         final String expected = "You successfully inserted a Discipline and Punish to repository";
-        final String actual = shell.evaluate(() -> "bInsert 2 Discipline,and,Punish Michel,Foucault Philosophy").toString();
+        final String actual = shell.evaluate(() -> "bInsert Discipline,and,Punish Michel,Foucault Philosophy").toString();
 
         assertEquals(expected, actual);
     }
@@ -55,15 +73,17 @@ class BookCommandsTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void shouldReturnCorrectMessageAfterInsertMethodWithOldAuthorAndGenre(){
-        final String expected = "You successfully inserted a A Portrait of the Artist as a Young Man to repository";
-        final String actual = shell.evaluate(() -> "bInsert 2 A,Portrait,of,the,Artist,as,a,Young,Man James,Joyce Modern,novel").toString();
+        final String expected = "You successfully inserted a A Portrait of the Artist as a Young Man " +
+                "to repository";
+        final String actual = shell.evaluate(() -> "bInsert A,Portrait,of,the,Artist,as,a,Young,Man " +
+                "James,Joyce Modernist,novel").toString();
 
         assertEquals(expected, actual);
     }
 
     @Test
     void testGetBookByIdByMessageComparison() {
-        when(bookDaoJdbc.getBookById(1)).thenReturn(ulysses);
+        when(bookRepository.getBookById(1L)).thenReturn(Optional.of(ulysses));
         final String expected = ulysses.toString();
         final String actual = shell.evaluate(() -> "bookById 1").toString();
 
@@ -72,7 +92,7 @@ class BookCommandsTest {
 
     @Test
     void testGetBookByTitleByMessageComparison() {
-        when(bookDaoJdbc.getBookByTitle(ulysses.getTitle())).thenReturn(ulysses);
+        when(bookRepository.getBookByTitle(ulysses.getTitle())).thenReturn(ulysses);
         final String expected = ulysses.toString();
         final String actual = shell.evaluate(() -> "bookByTitle Ulysses").toString();
 
@@ -81,7 +101,7 @@ class BookCommandsTest {
 
     @Test
     void testGetBookByAuthorByMessageComparison() {
-        when(bookDaoJdbc.getBookByAuthor(ulysses.getAuthor().getName())).thenReturn(ulysses);
+        when(bookRepository.getBookByAuthor(ulysses.getAuthor().getName())).thenReturn(ulysses);
         final String expected = ulysses.toString();
         final String actual = shell.evaluate(() -> "bookByAuthor James,Joyce").toString();
 
@@ -90,7 +110,7 @@ class BookCommandsTest {
 
     @Test
     void testGetBookByGenreByMessageComparison() {
-        when(bookDaoJdbc.getBookByGenre(ulysses.getGenre().getName())).thenReturn(ulysses);
+        when(bookRepository.getBookByGenre(ulysses.getGenre().getName())).thenReturn(ulysses);
         final String expected = ulysses.toString();
         final String actual = shell.evaluate(() -> "bookByGenre Modernist,novel").toString();
 
@@ -98,8 +118,17 @@ class BookCommandsTest {
     }
 
     @Test
+    void testGetBookByCommentByMessageComparison(){
+        when(bookRepository.getBookByComment("Published in 1922")).thenReturn(ulysses);
+        final String expected = ulysses.toString();
+        final String actual = shell.evaluate(() -> "bookByComment Published,in,1922").toString();
+
+        assertEquals(expected, actual);
+    }
+
+    @Test
     void testGetAllByMessageComparison() {
-        when(bookDaoJdbc.getAll()).thenReturn(List.of(ulysses));
+        when(bookRepository.getAll()).thenReturn(List.of(ulysses));
         final String expected = List.of(ulysses).toString();
         final String actual = shell.evaluate(() -> "bGetAll").toString();
 
@@ -108,6 +137,8 @@ class BookCommandsTest {
 
     @Test
     void shouldReturnCorrectMessageWithMultipleArgumentsAfterUpdateMethod() {
+        when(authorRepository.getAuthorByName("Michel Foucault")).thenReturn(new Author(0L, "Michel Foucault"));
+        when(genreRepository.getGenreByName("Philosophy")).thenReturn(new Genre(0L, "Philosophy"));
         final String expected = "Discipline and Punish was updated";
         final String actual = shell.evaluate(() -> "bUpdate 1 Discipline,and,Punish Michel,Foucault Philosophy").toString();
 
@@ -116,15 +147,18 @@ class BookCommandsTest {
 
     @Test
     void shouldReturnCorrectMessageAfterUpdateMethodWithOldAuthorAndGenre(){
+        when(authorRepository.getAuthorByName("Michel Foucault")).thenReturn(new Author(0L, "Michel Foucault"));
+        when(genreRepository.getGenreByName("Philosophy")).thenReturn(new Genre(0L, "Philosophy"));
         final String expected = "A Portrait of the Artist as a Young Man was updated";
-        final String actual = shell.evaluate(() -> "bUpdate 1 A,Portrait,of,the,Artist,as,a,Young,Man James,Joyce Modern,novel").toString();
+        final String actual = shell.evaluate(() -> "bUpdate 1 A,Portrait,of,the,Artist,as,a,Young,Man " +
+                "James,Joyce Modern,novel").toString();
 
         assertEquals(expected, actual);
     }
 
     @Test
     void shouldReturnCorrectMessageAfterDeleteMethod() {
-        when(bookDaoJdbc.getBookById(1)).thenReturn(ulysses);
+        when(bookRepository.getBookById(1L)).thenReturn(Optional.of(ulysses));
         final String expected = "Ulysses was deleted";
         final String actual = shell.evaluate(() -> "bDelete 1").toString();
 
