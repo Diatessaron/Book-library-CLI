@@ -8,13 +8,12 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.otus.homework.domain.Author;
 import ru.otus.homework.domain.Book;
-import ru.otus.homework.domain.Comment;
 import ru.otus.homework.domain.Genre;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @DataJpaTest
 class BookRepositoryTest {
@@ -36,7 +35,7 @@ class BookRepositoryTest {
     }
 
     @Test
-    void shouldReturnCorrectStudentsListWithAllInfo() {
+    void shouldReturnCorrectBookListWithAllInfo() {
         SessionFactory sessionFactory = em.getEntityManager().getEntityManagerFactory()
                 .unwrap(SessionFactory.class);
         sessionFactory.getStatistics().setStatisticsEnabled(true);
@@ -50,6 +49,7 @@ class BookRepositoryTest {
         assertThat(sessionFactory.getStatistics().getPrepareStatementCount()).isEqualTo(1L);
     }
 
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     @Test
     void shouldReturnCorrectBookByTitleWithAllInfo() {
         SessionFactory sessionFactory = em.getEntityManager().getEntityManagerFactory()

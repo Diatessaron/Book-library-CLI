@@ -8,7 +8,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.otus.homework.domain.Author;
 
-import javax.persistence.NoResultException;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
