@@ -7,16 +7,14 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.otus.homework.domain.Author;
-import ru.otus.homework.repository.AuthorRepositoryImpl;
 
-import javax.persistence.NoResultException;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
-@Import({AuthorRepositoryImpl.class, AuthorServiceImpl.class})
+@Import(AuthorServiceImpl.class)
 class AuthorServiceImplTest {
     @Autowired
     private AuthorServiceImpl service;
@@ -37,7 +35,7 @@ class AuthorServiceImplTest {
     }
 
     @Test
-    void  shouldReturnCorrectAuthorById() {
+    void shouldReturnCorrectAuthorById() {
         final Author actual = service.getAuthorById(1L);
 
         assertEquals(jamesJoyce, actual);
@@ -51,13 +49,13 @@ class AuthorServiceImplTest {
     }
 
     @Test
-    void shouldThrowExceptionAfterGetAuthorByNameMethodInvocation(){
-        assertThrows(NoResultException.class, () -> service.getAuthorByName("author"));
+    void shouldThrowExceptionAfterGetAuthorByNameMethodInvocation() {
+        assertThrows(IllegalArgumentException.class, () -> service.getAuthorByName("author"));
     }
 
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
-    void shouldReturnCorrectListOfAuthor(){
+    void shouldReturnCorrectListOfAuthor() {
         final Author foucault = new Author(0, "Michel Foucault");
         final List<Author> expected = List.of(this.jamesJoyce, foucault);
 

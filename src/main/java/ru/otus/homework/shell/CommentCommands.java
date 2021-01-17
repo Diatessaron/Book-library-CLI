@@ -25,13 +25,13 @@ public class CommentCommands {
         return service.getCommentById(id).toString();
     }
 
-    @ShellMethod(key = {"cbc", "cByContent", "commentByContent"}, value = "Get comment by content" +
+    @ShellMethod(key = {"cbc", "cByContent", "commentByContent"}, value = "Get comment by content. " +
             "Please, put comma instead of space in each argument or simply put the arguments in quotes.")
     public String getCommentByContent(@ShellOption("Content") String content) {
         return service.getCommentByContent(reformatString(content)).toString();
     }
 
-    @ShellMethod(key = {"cbb", "cByBook", "commentByBook"}, value = "Get comment by book title" +
+    @ShellMethod(key = {"cbb", "cByBook", "commentByBook"}, value = "Get comment by book title. " +
             "Please, put comma instead of space in each argument or simply put the arguments in quotes.")
     public String getCommentByBook(@ShellOption("Book title") String bookTitle) {
         return service.getCommentsByBook(bookTitle).toString();

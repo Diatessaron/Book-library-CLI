@@ -10,17 +10,15 @@ import ru.otus.homework.domain.Author;
 import ru.otus.homework.domain.Book;
 import ru.otus.homework.domain.Comment;
 import ru.otus.homework.domain.Genre;
-import ru.otus.homework.repository.BookRepositoryImpl;
-import ru.otus.homework.repository.CommentRepositoryImpl;
 
-import javax.persistence.NoResultException;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @DataJpaTest
-@Import({CommentRepositoryImpl.class, BookRepositoryImpl.class, CommentServiceImpl.class})
+@Import(CommentServiceImpl.class)
 class CommentServiceImplTest {
     @Autowired
     private CommentServiceImpl commentService;
@@ -64,7 +62,7 @@ class CommentServiceImplTest {
 
     @Test
     void shouldThrowExceptionAfterGetCommentByContentMethodInvocation(){
-        assertThrows(NoResultException.class, () -> commentService.getCommentByContent("comment"));
+        assertThrows(IllegalArgumentException.class, () -> commentService.getCommentByContent("comment"));
     }
 
     @Test

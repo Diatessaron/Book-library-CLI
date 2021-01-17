@@ -10,8 +10,8 @@ import ru.otus.homework.domain.Author;
 import ru.otus.homework.domain.Book;
 import ru.otus.homework.domain.Comment;
 import ru.otus.homework.domain.Genre;
-import ru.otus.homework.repository.BookRepositoryImpl;
-import ru.otus.homework.repository.CommentRepositoryImpl;
+import ru.otus.homework.repository.BookRepository;
+import ru.otus.homework.repository.CommentRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,9 +22,9 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 class CommentCommandsTest {
     @MockBean
-    private CommentRepositoryImpl commentRepository;
+    private CommentRepository commentRepository;
     @MockBean
-    private BookRepositoryImpl bookRepository;
+    private BookRepository bookRepository;
 
     @Autowired
     private Shell shell;
@@ -35,7 +35,8 @@ class CommentCommandsTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void testInsertMethodByTimesOfRepositoryInvocation() {
-        when(bookRepository.getBookById(ulysses.getId())).thenReturn(Optional.of(ulysses));
+        when(bookRepository.findById(ulysses.getId())).thenReturn(Optional.of(ulysses));
+
         shell.evaluate(() -> "ci 1 Second,comment");
 
         verify(commentRepository, times(1)).save
@@ -44,11 +45,13 @@ class CommentCommandsTest {
 
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
-    void shouldReturnCorrectMessageAfterInsertMethodInvocation(){
+    void shouldReturnCorrectMessageAfterInsertMethodInvocation() {
         final Genre genre = new Genre(1L, "genre");
         final Author author = new Author(1L, "author");
         final Book book = new Book(1L, "book", author, genre);
-        when(bookRepository.getBookById(1L)).thenReturn(Optional.of(book));
+
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
+
         final String expected = "You successfully added a comment to book";
         final String actual = shell.evaluate(() -> "cInsert 1 Second,comment,to,Ulysses").toString();
 
@@ -57,7 +60,8 @@ class CommentCommandsTest {
 
     @Test
     void testGetCommentByIdByMessageComparison() {
-        when(commentRepository.getCommentById(1L)).thenReturn(Optional.of(comment));
+        when(commentRepository.findById(1L)).thenReturn(Optional.of(comment));
+
         final String expected = Optional.of(comment).get().toString();
         final String actual = shell.evaluate(() -> "commentById 1").toString();
 
@@ -66,7 +70,9 @@ class CommentCommandsTest {
 
     @Test
     void testGetCommentByContentByMessageComparison() {
-        when(commentRepository.getCommentByContent(comment.getContent())).thenReturn(comment);
+        when(commentRepository.findByContent(comment.getContent()))
+                .thenReturn(Optional.of(comment));
+
         final String expected = comment.toString();
         final String actual = shell.evaluate(() -> "cByContent Published,in,1922").toString();
 
@@ -75,7 +81,8 @@ class CommentCommandsTest {
 
     @Test
     void testGetAllByMessageComparison() {
-        when(commentRepository.getAll()).thenReturn(List.of(comment));
+        when(commentRepository.findAll()).thenReturn(List.of(comment));
+
         final String expected = List.of(comment).toString();
         final String actual = shell.evaluate(() -> "cGetAll").toString();
 
@@ -84,7 +91,7 @@ class CommentCommandsTest {
 
     @Test
     void shouldReturnCorrectMessageAfterUpdateMethod() {
-        when(bookRepository.getBookById(1L)).thenReturn(Optional.of(ulysses));
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(ulysses));
 
         final String expected = "Ulysses comment was updated";
         final String actual = shell.evaluate(() -> "cUpdate 1 1 Good,book").toString();
@@ -95,8 +102,9 @@ class CommentCommandsTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void shouldReturnCorrectMessageAfterDeleteMethod() {
-        when(commentRepository.getCommentById(1L)).thenReturn(Optional.of(comment));
-        when(bookRepository.getBookByComment(comment.getContent())).thenReturn(ulysses);
+        when(commentRepository.findById(1L)).thenReturn(Optional.of(comment));
+        when(bookRepository.findByComment_Content(comment.getContent()))
+                .thenReturn(Optional.of(ulysses));
 
         final String expected = "Ulysses comment was deleted";
         final String actual = shell.evaluate(() -> "cDelete 1").toString();

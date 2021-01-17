@@ -26,27 +26,28 @@ public class AuthorServiceImpl implements AuthorService {
     @Transactional(readOnly = true)
     @Override
     public Author getAuthorById(long id) {
-        return authorRepository.getAuthorById(id).orElseThrow(
+        return authorRepository.findById(id).orElseThrow(
                 () -> new IllegalArgumentException("Incorrect id"));
     }
 
     @Transactional(readOnly = true)
     @Override
     public Author getAuthorByName(String name) {
-        return authorRepository.getAuthorByName(name);
+        return authorRepository.findByName(name)
+                .orElseThrow(() -> new IllegalArgumentException("Incorrect name"));
     }
 
     @Transactional(readOnly = true)
     @Override
     public List<Author> getAll() {
-        return authorRepository.getAll();
+        return authorRepository.findAll();
     }
 
     @Transactional
     @Override
     public String updateAuthor(long id, String name) {
         final Author author = new Author(id, String.join(" ", name.split(",")));
-        authorRepository.update(author);
+        authorRepository.update(author.getName(), author.getId());
 
         return String.format("%s was updated", author.getName());
     }
@@ -54,7 +55,7 @@ public class AuthorServiceImpl implements AuthorService {
     @Transactional
     @Override
     public String deleteAuthorById(long id) {
-        final Author author = authorRepository.getAuthorById(id)
+        final Author author = authorRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Incorrect id"));
         authorRepository.deleteById(id);
 

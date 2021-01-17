@@ -39,38 +39,42 @@ public class BookServiceImpl implements BookService {
     @Transactional(readOnly = true)
     @Override
     public Book getBookById(long id) {
-        return bookRepository.getBookById(id).orElseThrow(
+        return bookRepository.findById(id).orElseThrow(
                 () -> new IllegalArgumentException("Incorrect book id"));
     }
 
     @Transactional(readOnly = true)
     @Override
     public Book getBookByTitle(String title) {
-        return bookRepository.getBookByTitle(title);
+        return bookRepository.findByTitle(title).orElseThrow
+                (() -> new IllegalArgumentException("Incorrect book title"));
     }
 
     @Transactional(readOnly = true)
     @Override
     public Book getBookByAuthor(String author) {
-        return bookRepository.getBookByAuthor(author);
+        return bookRepository.findByAuthor_Name(author).orElseThrow
+                (() -> new IllegalArgumentException("Incorrect author name"));
     }
 
     @Transactional(readOnly = true)
     @Override
     public Book getBookByGenre(String genre) {
-        return bookRepository.getBookByGenre(genre);
+        return bookRepository.findByGenre_Name(genre).orElseThrow
+                (() -> new IllegalArgumentException("Incorrect genre name"));
     }
 
     @Transactional(readOnly = true)
     @Override
     public Book getBookByComment(String comment) {
-        return bookRepository.getBookByComment(comment);
+        return bookRepository.findByComment_Content(comment).orElseThrow
+                (() -> new IllegalArgumentException("Incorrect comment content"));
     }
 
     @Transactional(readOnly = true)
     @Override
     public List<Book> getAll() {
-        return bookRepository.getAll();
+        return bookRepository.findAll();
     }
 
     @Transactional
@@ -90,22 +94,22 @@ public class BookServiceImpl implements BookService {
     }
 
     private Author getAuthor(String authorName) {
-        try {
-            return authorRepository.getAuthorByName(authorName);
-        } catch (EmptyResultDataAccessException | NoResultException e) {
-            Author author = new Author(0L, authorName);
+        final Author author = authorRepository.findByName(authorName)
+                .orElse(new Author(0L, authorName));
+
+        if (author.getId() == 0L)
             authorRepository.save(author);
-            return author;
-        }
+
+        return author;
     }
 
     private Genre getGenre(String genreName) {
-        try {
-            return genreRepository.getGenreByName(genreName);
-        } catch (EmptyResultDataAccessException | NoResultException e) {
-            Genre genre = new Genre(0L, genreName);
+        final Genre genre = genreRepository.findByName(genreName)
+                .orElse(new Genre(0L, genreName));
+
+        if (genre.getId() == 0L)
             genreRepository.save(genre);
-            return genre;
-        }
+
+        return genre;
     }
 }
