@@ -2,9 +2,7 @@ package ru.otus.homework.service;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.context.annotation.Import;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.otus.homework.domain.Author;
 import ru.otus.homework.domain.Book;
@@ -15,13 +13,10 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
-@DataJpaTest
-@Import(BookServiceImpl.class)
+@SpringBootTest
 class BookServiceImplTest {
     @Autowired
     private BookServiceImpl service;
-    @Autowired
-    private TestEntityManager em;
 
     private final Book expectedUlysses = new Book(1L, "Ulysses", new Author(1, "James Joyce"),
             new Genre(1, "Modernist novel"));
@@ -32,7 +27,7 @@ class BookServiceImplTest {
         service.saveBook("Discipline and Punish", "Michel Foucault",
                 "Philosophy");
 
-        final Book actualBook = em.find(Book.class, 2L);
+        final Book actualBook = service.getBookById(2L);
         assertThat(actualBook).isNotNull().matches(s -> !s.getTitle().equals(""))
                 .matches(s -> s.getTitle().equals("Discipline and Punish"))
                 .matches(s -> s.getAuthor().getName().equals("Michel Foucault"))
@@ -46,7 +41,7 @@ class BookServiceImplTest {
         service.saveBook("A Portrait of the Artist as a Young Man",
                 "James Joyce", "Modernist novel");
 
-        final Book actualBook = em.find(Book.class, 2L);
+        final Book actualBook = service.getBookById(2L);
         assertThat(actualBook).isNotNull().matches(s -> !s.getTitle().equals(""))
                 .matches(s -> s.getTitle().equals("A Portrait of the Artist as a Young Man"))
                 .matches(s -> s.getAuthor().getName().equals("James Joyce"))
@@ -55,6 +50,7 @@ class BookServiceImplTest {
                 .matches(s -> s.getGenre().getId() == 1);
     }
 
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     @Test
     void shouldReturnCorrectBookById() {
         final Book actual = service.getBookById(1L);
@@ -83,6 +79,7 @@ class BookServiceImplTest {
         assertEquals(expectedUlysses, actual);
     }
 
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     @Test
     void shouldReturnCorrectBookByComment() {
         final Book actual = service.getBookByComment("Published in 1922");
@@ -110,7 +107,7 @@ class BookServiceImplTest {
         service.updateBook(1L, "Discipline and Punish", "Michel Foucault",
                 "Philosophy");
 
-        final Book actualBook = em.find(Book.class, 1L);
+        final Book actualBook = service.getBookById(1L);
         assertThat(actualBook).isNotNull().matches(s -> !s.getTitle().equals(""))
                 .matches(s -> s.getTitle().equals("Discipline and Punish"))
                 .matches(s -> s.getAuthor().getName().equals("Michel Foucault"))
@@ -124,7 +121,7 @@ class BookServiceImplTest {
         service.updateBook(1L, "A Portrait of the Artist as a Young Man",
                 "James Joyce", "Modernist novel");
 
-        final Book actualBook = em.find(Book.class, 1L);
+        final Book actualBook = service.getBookById(1L);
         assertThat(actualBook).isNotNull().matches(s -> !s.getTitle().equals(""))
                 .matches(s -> s.getTitle().equals("A Portrait of the Artist as a Young Man"))
                 .matches(s -> s.getAuthor().getName().equals("James Joyce"))

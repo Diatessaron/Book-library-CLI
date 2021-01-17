@@ -2,26 +2,22 @@ package ru.otus.homework.service;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.context.annotation.Import;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.otus.homework.domain.Author;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@DataJpaTest
-@Import(AuthorServiceImpl.class)
+@SpringBootTest
 class AuthorServiceImplTest {
     @Autowired
     private AuthorServiceImpl service;
-    @Autowired
-    private TestEntityManager em;
 
-    private Author jamesJoyce = new Author(1L, "James Joyce");
+    private final Author jamesJoyce = new Author(1L, "James Joyce");
 
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
@@ -73,7 +69,7 @@ class AuthorServiceImplTest {
     void testUpdateAuthorMethodByComparing() {
         service.updateAuthor(1L, "Author");
 
-        final Author actualAuthor = em.find(Author.class, 1L);
+        final Author actualAuthor = service.getAuthorById(1L);
         assertThat(actualAuthor).isNotNull().matches(s -> !s.getName().isBlank())
                 .matches(s -> s.getName().equals("Author"));
     }

@@ -9,13 +9,13 @@ import java.util.List;
 import java.util.Optional;
 
 public interface BookRepository extends JpaRepository<Book, Long> {
-    @EntityGraph(attributePaths = {"author", "genre"})
+    @EntityGraph("Book")
     Optional<Book> findByTitle(String title);
 
-    @EntityGraph(attributePaths = {"author", "genre"})
+    @EntityGraph("Book")
     Optional<Book> findByAuthor_Name(String author);
 
-    @EntityGraph(attributePaths = {"author", "genre"})
+    @EntityGraph("Book")
     Optional<Book> findByGenre_Name(String genre);
 
     @Query("select b from Book b join fetch b.genre g join fetch b.author a " +
@@ -23,6 +23,6 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             "where c.content = :content")
     Optional<Book> findByComment_Content(String content);
 
-    @EntityGraph(attributePaths = {"author", "genre"})
+    @EntityGraph("Book")
     List<Book> findAll();
 }

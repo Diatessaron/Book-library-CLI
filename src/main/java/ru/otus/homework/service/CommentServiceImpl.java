@@ -50,7 +50,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public List<Comment> getCommentsByBook(String bookTitle) {
         return commentRepository.findByBook_Id(bookRepository.findByTitle(bookTitle)
-                .orElseThrow(() -> new IllegalArgumentException("Incorrect book id")).getId());
+                .orElseThrow(() -> new IllegalArgumentException("Incorrect book name")).getId());
     }
 
     @Transactional(readOnly = true)

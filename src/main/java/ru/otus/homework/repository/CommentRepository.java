@@ -11,16 +11,16 @@ import java.util.List;
 import java.util.Optional;
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
-    @EntityGraph(attributePaths = {"book"})
+    @EntityGraph("Comment.book")
     Optional<Comment> findByContent(String content);
 
-    @EntityGraph(attributePaths = {"book"})
+    @EntityGraph("Comment.book")
     List<Comment> findByBook_Id(long bookId);
 
     @Modifying
     @Query("update Comment c set c.content = :content, c.book = :book where c.id = :id")
     void update(String content, Book book, long id);
 
-    @EntityGraph(attributePaths = {"book"})
+    @EntityGraph("Comment.book")
     List<Comment> findAll();
 }

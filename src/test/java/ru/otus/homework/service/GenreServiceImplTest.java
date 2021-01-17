@@ -2,9 +2,7 @@ package ru.otus.homework.service;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.context.annotation.Import;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.otus.homework.domain.Genre;
 
@@ -13,13 +11,10 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
-@DataJpaTest
-@Import(GenreServiceImpl.class)
+@SpringBootTest
 class GenreServiceImplTest {
     @Autowired
     private GenreServiceImpl service;
-    @Autowired
-    private TestEntityManager em;
 
     private final Genre expectedNovel = new Genre(1L, "Modernist novel");
 
@@ -73,7 +68,7 @@ class GenreServiceImplTest {
     void testUpdateAuthorMethodByComparing() {
         service.updateGenre(1L, "Genre");
 
-        final Genre actualGenre = em.find(Genre.class, 1L);
+        final Genre actualGenre = service.getGenreById(1L);
         assertThat(actualGenre).isNotNull().matches(s -> !s.getName().isBlank())
                 .matches(s -> s.getName().equals("Genre"));
     }

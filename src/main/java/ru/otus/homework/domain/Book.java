@@ -4,6 +4,8 @@ import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
+@NamedEntityGraph(name = "Book",
+        attributeNodes = {@NamedAttributeNode("author"), @NamedAttributeNode("genre")})
 @Table(name = "books")
 public class Book {
     @Id
