@@ -1,26 +1,21 @@
 package ru.otus.homework.repository;
 
-import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-import ru.otus.homework.domain.Book;
+import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 import ru.otus.homework.domain.Comment;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface CommentRepository extends JpaRepository<Comment, Long> {
-    @EntityGraph("Comment.book")
+public interface CommentRepository extends MongoRepository<Comment, String> {
     Optional<Comment> findByContent(String content);
 
-    @EntityGraph("Comment.book")
-    List<Comment> findByBook_Id(long bookId);
+    List<Comment> findByBook_title(String bookTitle);
 
-    @Modifying
-    @Query("update Comment c set c.content = :content, c.book = :book where c.id = :id")
-    void update(String content, Book book, long id);
+    @Query(value = "{'content': ?0}", fields = "{'book': 1, '_id': 0}")
+    Optional<Comment> findBookByComment(String comment);
 
-    @EntityGraph("Comment.book")
     List<Comment> findAll();
+
+    void deleteByContent(String content);
 }

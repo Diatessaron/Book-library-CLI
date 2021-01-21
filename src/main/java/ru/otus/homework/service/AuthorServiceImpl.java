@@ -18,16 +18,9 @@ public class AuthorServiceImpl implements AuthorService {
     @Transactional
     @Override
     public String saveAuthor(String name) {
-        final Author author = new Author(0L, name);
+        final Author author = new Author(name);
         authorRepository.save(author);
         return String.format("You successfully saved a %s to repository", author.getName());
-    }
-
-    @Transactional(readOnly = true)
-    @Override
-    public Author getAuthorById(long id) {
-        return authorRepository.findById(id).orElseThrow(
-                () -> new IllegalArgumentException("Incorrect id"));
     }
 
     @Transactional(readOnly = true)
@@ -45,19 +38,23 @@ public class AuthorServiceImpl implements AuthorService {
 
     @Transactional
     @Override
-    public String updateAuthor(long id, String name) {
-        final Author author = new Author(id, String.join(" ", name.split(",")));
-        authorRepository.update(author.getName(), author.getId());
+    public String updateAuthor(String oldAuthorName, String name) {
+        final Author author = authorRepository.findByName(oldAuthorName).orElseThrow
+                (() -> new IllegalArgumentException("Incorrect author name"));
+        author.setName(name);
 
-        return String.format("%s was updated", author.getName());
+        authorRepository.deleteByName(oldAuthorName);
+        authorRepository.save(author);
+
+        return String.format("%s was updated", name);
     }
 
     @Transactional
     @Override
-    public String deleteAuthorById(long id) {
-        final Author author = authorRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Incorrect id"));
-        authorRepository.deleteById(id);
+    public String deleteAuthorByName(String name) {
+        final Author author = authorRepository.findByName(name)
+                .orElseThrow(() -> new IllegalArgumentException("Incorrect name"));
+        authorRepository.deleteByName(name);
 
         return String.format("%s was deleted", author.getName());
     }

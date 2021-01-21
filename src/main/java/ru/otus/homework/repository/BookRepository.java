@@ -1,28 +1,19 @@
 package ru.otus.homework.repository;
 
-import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.mongodb.repository.MongoRepository;
 import ru.otus.homework.domain.Book;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface BookRepository extends JpaRepository<Book, Long> {
-    @EntityGraph("Book")
+public interface BookRepository extends MongoRepository<Book, String> {
     Optional<Book> findByTitle(String title);
 
-    @EntityGraph("Book")
     Optional<Book> findByAuthor_Name(String author);
 
-    @EntityGraph("Book")
     Optional<Book> findByGenre_Name(String genre);
 
-    @Query("select b from Book b join fetch b.genre g join fetch b.author a " +
-            "left join fetch Comment c on c.book = b " +
-            "where c.content = :content")
-    Optional<Book> findByComment_Content(String content);
-
-    @EntityGraph("Book")
     List<Book> findAll();
+
+    void deleteByTitle(String title);
 }

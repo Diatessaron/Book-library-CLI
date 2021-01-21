@@ -1,5 +1,6 @@
 package ru.otus.homework.shell;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -28,15 +29,15 @@ class BookCommandsTest {
 
     @Autowired
     private Shell shell;
-    private final Book ulysses = new Book(1, "Ulysses", new Author(1, "James Joyce"),
-            new Genre(1, "Modernist novel"));
+    private final Book ulysses = new Book("Ulysses", new Author("James Joyce"),
+            new Genre("Modernist novel"));
 
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void testInsertMethodByTimesOfRepositoryInvocation() {
-        final Author author = new Author(0L, "author");
-        final Genre genre = new Genre(0L, "genre");
-        final Book book = new Book(0L, "book", author, genre);
+        final Author author = new Author("author");
+        final Genre genre = new Genre("genre");
+        final Book book = new Book("book", author, genre);
         when(authorRepository.findByName("author")).thenReturn(Optional.of(author));
         when(genreRepository.findByName("genre")).thenReturn(Optional.of(genre));
         shell.evaluate(() -> "bInsert book author genre");
@@ -50,9 +51,9 @@ class BookCommandsTest {
     @Test
     void shouldReturnCorrectMessageAfterInsertMethod() {
         when(authorRepository.findByName("author")).thenReturn(Optional.of
-                (new Author(0L, "author")));
+                (new Author("author")));
         when(genreRepository.findByName("genre")).thenReturn(Optional.of
-                (new Genre(0L, "genre")));
+                (new Genre("genre")));
         final String expected = "You successfully inserted a book to repository";
         final String actual = shell.evaluate(() -> "bInsert book author genre").toString();
 
@@ -63,9 +64,9 @@ class BookCommandsTest {
     @Test
     void shouldReturnCorrectMessageWithMultipleArgumentsAfterInsertMethod() {
         when(authorRepository.findByName("author")).thenReturn(Optional.of
-                (new Author(0L, "author")));
+                (new Author("author")));
         when(genreRepository.findByName("genre")).thenReturn(Optional.of
-                (new Genre(0L, "genre")));
+                (new Genre("genre")));
         final String expected = "You successfully inserted a Discipline and Punish to repository";
         final String actual = shell.evaluate(() -> "bInsert Discipline,and,Punish Michel,Foucault Philosophy").toString();
 
@@ -79,15 +80,6 @@ class BookCommandsTest {
                 "to repository";
         final String actual = shell.evaluate(() -> "bInsert A,Portrait,of,the,Artist,as,a,Young,Man " +
                 "James,Joyce Modernist,novel").toString();
-
-        assertEquals(expected, actual);
-    }
-
-    @Test
-    void testGetBookByIdByMessageComparison() {
-        when(bookRepository.findById(1L)).thenReturn(Optional.of(ulysses));
-        final String expected = ulysses.toString();
-        final String actual = shell.evaluate(() -> "bookById 1").toString();
 
         assertEquals(expected, actual);
     }
@@ -122,16 +114,6 @@ class BookCommandsTest {
     }
 
     @Test
-    void testGetBookByCommentByMessageComparison() {
-        when(bookRepository.findByComment_Content("Published in 1922")).thenReturn
-                (Optional.of(ulysses));
-        final String expected = ulysses.toString();
-        final String actual = shell.evaluate(() -> "bookByComment Published,in,1922").toString();
-
-        assertEquals(expected, actual);
-    }
-
-    @Test
     void testGetAllByMessageComparison() {
         when(bookRepository.findAll()).thenReturn(List.of(ulysses));
         final String expected = List.of(ulysses).toString();
@@ -140,26 +122,34 @@ class BookCommandsTest {
         assertEquals(expected, actual);
     }
 
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void shouldReturnCorrectMessageWithMultipleArgumentsAfterUpdateMethod() {
         when(authorRepository.findByName("Michel Foucault")).thenReturn
-                (Optional.of((new Author(0L, "Michel Foucault"))));
+                (Optional.of((new Author("Michel Foucault"))));
         when(genreRepository.findByName("Philosophy")).thenReturn
-                (Optional.of(new Genre(0L, "Philosophy")));
+                (Optional.of(new Genre("Philosophy")));
+        when(bookRepository.findByTitle("Ulysses")).thenReturn
+                (Optional.of(ulysses));
+
         final String expected = "Discipline and Punish was updated";
-        final String actual = shell.evaluate(() -> "bUpdate 1 Discipline,and,Punish Michel,Foucault Philosophy").toString();
+        final String actual = shell.evaluate(() -> "bUpdate Ulysses Discipline,and,Punish Michel,Foucault Philosophy").toString();
 
         assertEquals(expected, actual);
     }
 
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void shouldReturnCorrectMessageAfterUpdateMethodWithOldAuthorAndGenre() {
         when(authorRepository.findByName("Michel Foucault")).thenReturn
-                (Optional.of(new Author(0L, "Michel Foucault")));
+                (Optional.of(new Author("Michel Foucault")));
         when(genreRepository.findByName("Philosophy")).thenReturn
-                (Optional.of(new Genre(0L, "Philosophy")));
+                (Optional.of(new Genre("Philosophy")));
+        when(bookRepository.findByTitle("Ulysses")).thenReturn
+                (Optional.of(ulysses));
+
         final String expected = "A Portrait of the Artist as a Young Man was updated";
-        final String actual = shell.evaluate(() -> "bUpdate 1 A,Portrait,of,the,Artist,as,a,Young,Man " +
+        final String actual = shell.evaluate(() -> "bUpdate Ulysses A,Portrait,of,the,Artist,as,a,Young,Man " +
                 "James,Joyce Modern,novel").toString();
 
         assertEquals(expected, actual);
@@ -167,9 +157,9 @@ class BookCommandsTest {
 
     @Test
     void shouldReturnCorrectMessageAfterDeleteMethod() {
-        when(bookRepository.findById(1L)).thenReturn(Optional.of(ulysses));
+        when(bookRepository.findByTitle("Ulysses")).thenReturn(Optional.of(ulysses));
         final String expected = "Ulysses was deleted";
-        final String actual = shell.evaluate(() -> "bDelete 1").toString();
+        final String actual = shell.evaluate(() -> "bDelete Ulysses").toString();
 
         assertEquals(expected, actual);
     }

@@ -23,14 +23,14 @@ class GenreCommandsTest {
 
     @Autowired
     private Shell shell;
-    private final Genre novel = new Genre(1L, "Modernist novel");
+    private final Genre novel = new Genre("Modernist novel");
 
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void testInsertMethodByTimesOfRepositoryInvocation() {
         shell.evaluate(() -> "gInsert Philosophy");
 
-        verify(genreRepository, times(1)).save(new Genre(0L, "Philosophy"));
+        verify(genreRepository, times(1)).save(new Genre("Philosophy"));
     }
 
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
@@ -38,15 +38,6 @@ class GenreCommandsTest {
     void shouldReturnCorrectMessage() {
         final String expected = "You successfully saved a philosophy to repository";
         final String actual = shell.evaluate(() -> "gInsert philosophy").toString();
-
-        assertEquals(expected, actual);
-    }
-
-    @Test
-    void testGetGenreByIdByMessageComparison() {
-        when(genreRepository.findById(1L)).thenReturn(Optional.of(novel));
-        final String expected = novel.toString();
-        final String actual = shell.evaluate(() -> "genreById 1").toString();
 
         assertEquals(expected, actual);
     }
@@ -69,10 +60,12 @@ class GenreCommandsTest {
         assertEquals(expected, actual);
     }
 
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     @Test
     void shouldReturnCorrectMessageAfterUpdateMethod() {
-        final String expected = "Modernist novel was updated";
-        final String actual = shell.evaluate(() -> "gUpdate 1 Modernist,novel").toString();
+        when(genreRepository.findByName("Modernist novel")).thenReturn(Optional.of(novel));
+        final String expected = "Philosophy was updated";
+        final String actual = shell.evaluate(() -> "gUpdate Modernist,novel Philosophy").toString();
 
         assertEquals(expected, actual);
     }
@@ -80,10 +73,10 @@ class GenreCommandsTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     @Test
     void shouldReturnCorrectMessageAfterDeleteMethod() {
-        when(genreRepository.findById(1L)).thenReturn(Optional.of(novel));
+        when(genreRepository.findByName("Modernist novel")).thenReturn(Optional.of(novel));
 
         final String expected = "Modernist novel was deleted";
-        final String actual = shell.evaluate(() -> "gDelete 1").toString();
+        final String actual = shell.evaluate(() -> "gDelete Modernist,novel").toString();
 
         assertEquals(expected, actual);
     }
@@ -91,11 +84,11 @@ class GenreCommandsTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void bookShouldBeDeletedBeforeGenreDeletion() {
-        when(genreRepository.findById(1L)).thenReturn(Optional.of(novel));
-        shell.evaluate(() -> "gDelete 1");
+        when(genreRepository.findByName("Modernist novel")).thenReturn(Optional.of(novel));
+        shell.evaluate(() -> "gDelete Modernist,novel");
 
         final InOrder inOrder = inOrder(genreRepository);
-        inOrder.verify(genreRepository).findById(1L);
-        inOrder.verify(genreRepository).deleteById(1L);
+        inOrder.verify(genreRepository).findByName("Modernist novel");
+        inOrder.verify(genreRepository).deleteByName("Modernist novel");
     }
 }

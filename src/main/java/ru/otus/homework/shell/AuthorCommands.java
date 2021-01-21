@@ -19,11 +19,6 @@ public class AuthorCommands {
         return service.saveAuthor(reformatString(authorName));
     }
 
-    @ShellMethod(key = {"abi", "authorById"}, value = "Get author by id")
-    public String getAuthorById(@ShellOption("Id") long id) {
-        return service.getAuthorById(id).toString();
-    }
-
     @ShellMethod(key = {"abn", "authorByName"}, value = "Get author by name. " +
             "Please, put comma instead of space in each argument or simply put the arguments in quotes.")
     public String getAuthorByName(@ShellOption("Name") String name) {
@@ -35,16 +30,17 @@ public class AuthorCommands {
         return service.getAll().toString();
     }
 
-    @ShellMethod(key = {"au", "aUpdate"}, value = "Update author in repository. Arguments: id, author. " +
-            "Please, put comma instead of space in each argument or simply put the arguments in quotes.")
-    public String update(@ShellOption("Id") long id,
+    @ShellMethod(key = {"au", "aUpdate"}, value = "Update author in repository. Arguments: oldAuthorName, " +
+            "newAuthorName. Please, put comma instead of space in each argument or simply put the " +
+            "arguments in quotes.")
+    public String update(@ShellOption("OldAuthorName") String oldAuthorName,
                          @ShellOption("Name") String name) {
-        return service.updateAuthor(id, name);
+        return service.updateAuthor(reformatString(oldAuthorName), reformatString(name));
     }
 
-    @ShellMethod(key = {"ad", "aDelete"}, value = "Delete author by id")
-    public String deleteById(@ShellOption("Id") long id) {
-        return service.deleteAuthorById(id);
+    @ShellMethod(key = {"ad", "aDelete"}, value = "Delete author by name")
+    public String deleteByName(@ShellOption("Name") String name) {
+        return service.deleteAuthorByName(reformatString(name));
     }
 
     private String reformatString(String str) {

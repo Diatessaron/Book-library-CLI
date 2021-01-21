@@ -3,7 +3,6 @@ package ru.otus.homework.shell;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
-import ru.otus.homework.domain.Genre;
 import ru.otus.homework.service.GenreService;
 
 @ShellComponent
@@ -20,11 +19,6 @@ public class GenreCommands {
         return genreService.saveGenre(reformatString(name));
     }
 
-    @ShellMethod(key = {"gbi", "genreById", "gById"}, value = "Get genre by id")
-    public String getGenreById(@ShellOption("Id") long id) {
-        return genreService.getGenreById(id).toString();
-    }
-
     @ShellMethod(key = {"gbn", "genreByName", "gByName"}, value = "Get genre by name. " +
             "Please, put comma instead of space in each argument or simply put the arguments in quotes.")
     public String getGenreByName(@ShellOption("Name") String name) {
@@ -36,16 +30,16 @@ public class GenreCommands {
         return genreService.getAll().toString();
     }
 
-    @ShellMethod(key = {"gu", "gUpdate"}, value = "Update genre in repository. Arguments: id, name. " +
+    @ShellMethod(key = {"gu", "gUpdate"}, value = "Update genre in repository. Arguments: oldGenreName, NewGenreName. " +
             "Please, put comma instead of space in each argument or simply put the arguments in quotes.")
-    public String update(@ShellOption("Id") long id,
+    public String update(@ShellOption("OldGenreName") String oldGenreName,
                          @ShellOption("Name") String name) {
-        return genreService.updateGenre(id, reformatString(name));
+        return genreService.updateGenre(reformatString(oldGenreName), reformatString(name));
     }
 
-    @ShellMethod(key = {"gd", "gDelete"}, value = "Delete genre by id")
-    public String deleteById(@ShellOption("Id") long id) {
-        return genreService.deleteGenreById(id);
+    @ShellMethod(key = {"gd", "gDelete"}, value = "Delete genre by name")
+    public String deleteByName(@ShellOption("Name") String name) {
+        return genreService.deleteGenreByName(reformatString(name));
     }
 
     private String reformatString(String str) {

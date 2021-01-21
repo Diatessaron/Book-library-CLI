@@ -25,11 +25,6 @@ public class BookCommands {
                 reformatString(title));
     }
 
-    @ShellMethod(key = {"bbi", "bookById"}, value = "Get book by id")
-    public String getBookById(@ShellOption("Id") long id) {
-        return bookService.getBookById(id).toString();
-    }
-
     @ShellMethod(key = {"bbt", "bookByTitle"}, value = "Get book by title. " +
             "Please, put comma instead of space in each argument or simply put the arguments in quotes.")
     public String getBookByTitle(@ShellOption("Title") String title) {
@@ -59,21 +54,22 @@ public class BookCommands {
         return bookService.getAll().toString();
     }
 
-    @ShellMethod(key = {"bu", "bUpdate"}, value = "Update book in repository. Arguments: id, title, author, genre. " +
-            "Please, put comma instead of space in each argument or simply put the arguments in quotes.")
-    public String update(@ShellOption("Id") long id,
+    @ShellMethod(key = {"bu", "bUpdate"}, value = "Update book in repository. Arguments: oldBookTitle, title, " +
+            "author, genre. Please, put comma instead of space in each argument or simply put the " +
+            "arguments in quotes.")
+    public String update(@ShellOption("OldBookTitle") String oldBookTitle,
                          @ShellOption("Title") String title,
                          @ShellOption("Author") String authorNameParameter,
                          @ShellOption("Genre") String genreNameParameter) {
-        bookService.updateBook(id, reformatString(title),
+        bookService.updateBook(reformatString(oldBookTitle), reformatString(title),
                 reformatString(authorNameParameter), reformatString(genreNameParameter));
         return String.format("%s was updated", reformatString(title));
     }
 
-    @ShellMethod(key = {"bd", "bDelete"}, value = "Delete book by id")
-    public String deleteById(@ShellOption("Id") long id) {
-        final Book book = bookService.getBookById(id);
-        bookService.deleteBookById(id);
+    @ShellMethod(key = {"bd", "bDelete"}, value = "Delete book by name")
+    public String deleteByName(@ShellOption("Name") String name) {
+        final Book book = bookService.getBookByTitle(reformatString(name));
+        bookService.deleteBookByTitle(reformatString(name));
         return String.format("%s was deleted", book.getTitle());
     }
 

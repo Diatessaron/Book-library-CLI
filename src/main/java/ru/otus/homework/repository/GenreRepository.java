@@ -1,16 +1,12 @@
 package ru.otus.homework.repository;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.mongodb.repository.MongoRepository;
 import ru.otus.homework.domain.Genre;
 
 import java.util.Optional;
 
-public interface GenreRepository extends JpaRepository<Genre, Long> {
+public interface GenreRepository extends MongoRepository<Genre, String> {
     Optional<Genre> findByName(String name);
 
-    @Modifying
-    @Query("update Genre g set g.name = :name where g.id = :id")
-    void update(String name, long id);
+    void deleteByName(String name);
 }

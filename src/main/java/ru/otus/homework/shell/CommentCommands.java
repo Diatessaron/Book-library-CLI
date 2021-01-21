@@ -13,16 +13,11 @@ public class CommentCommands {
         this.service = service;
     }
 
-    @ShellMethod(key = {"ci", "cInsert"}, value = "Insert comment. Arguments: book id, comment. " +
+    @ShellMethod(key = {"ci", "cInsert"}, value = "Insert comment. Arguments: book, comment. " +
             "Please, put comma instead of space in each argument or simply put the arguments in quotes.")
-    public String insert(@ShellOption("BookId") long bookId,
+    public String insert(@ShellOption("BookTitle") String bookTitle,
                          @ShellOption("Comment") String commentContent) {
-        return service.saveComment(bookId, reformatString(commentContent));
-    }
-
-    @ShellMethod(key = {"cbi", "cById", "commentById"}, value = "Get comment by id")
-    public String getCommentById(@ShellOption("Id") long id) {
-        return service.getCommentById(id).toString();
+        return service.saveComment(reformatString(bookTitle), reformatString(commentContent));
     }
 
     @ShellMethod(key = {"cbc", "cByContent", "commentByContent"}, value = "Get comment by content. " +
@@ -34,7 +29,7 @@ public class CommentCommands {
     @ShellMethod(key = {"cbb", "cByBook", "commentByBook"}, value = "Get comment by book title. " +
             "Please, put comma instead of space in each argument or simply put the arguments in quotes.")
     public String getCommentByBook(@ShellOption("Book title") String bookTitle) {
-        return service.getCommentsByBook(bookTitle).toString();
+        return service.getCommentsByBook(reformatString(bookTitle)).toString();
     }
 
     @ShellMethod(key = {"cga", "cGetAll"}, value = "Get all comments")
@@ -42,18 +37,18 @@ public class CommentCommands {
         return service.getAll().toString();
     }
 
-    @ShellMethod(key = {"cu", "cUpdate"}, value = "Update comment in repository. Arguments: bookId, commentId, " +
-            "name. Please, put comma instead of space in each argument or simply put the arguments " +
+    @ShellMethod(key = {"cu", "cUpdate"}, value = "Update comment in repository. Arguments: oldCommentContent, " +
+            "comment. Please, put comma instead of space in each argument or simply put the arguments " +
             "in quotes.")
-    public String update(@ShellOption("BookId") long bookId,
-                         @ShellOption("CommentId to replace") long commentId,
-                         @ShellOption("Content") String commentContent) {
-        return service.updateComment(bookId, commentId, commentContent);
+    public String update(@ShellOption("OldCommentContent") String oldCommentContent,
+                         @ShellOption("Comment") String commentContent) {
+        return service.updateComment(reformatString(oldCommentContent), reformatString(commentContent));
     }
 
-    @ShellMethod(key = {"cd", "cDelete"}, value = "Delete comment by id")
-    public String deleteById(@ShellOption("Id") long id) {
-        return service.deleteById(id);
+    @ShellMethod(key = {"cd", "cDelete"}, value = "Delete comment by content. Please, put comma instead of " +
+            "space in each argument or simply put the arguments in quotes.")
+    public String deleteByContent(@ShellOption("Content") String content) {
+        return service.deleteByContent(reformatString(content));
     }
 
     private String reformatString(String str) {

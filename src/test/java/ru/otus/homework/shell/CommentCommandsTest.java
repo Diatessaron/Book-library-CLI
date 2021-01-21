@@ -1,5 +1,6 @@
 package ru.otus.homework.shell;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -28,42 +29,38 @@ class CommentCommandsTest {
 
     @Autowired
     private Shell shell;
-    private final Book ulysses = new Book(1, "Ulysses", new Author(1, "James Joyce"),
-            new Genre(1, "Modernist novel"));
-    private final Comment comment = new Comment(1L, "Published in 1922", ulysses);
+    private final Book ulysses = new Book("Ulysses", new Author("James Joyce"),
+            new Genre("Modernist novel"));
+    private final Comment comment = new Comment("Published in 1922", ulysses);
+
+    @BeforeEach
+    void setUp(){
+        bookRepository.save(ulysses);
+        commentRepository.save(comment);
+    }
 
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void testInsertMethodByTimesOfRepositoryInvocation() {
-        when(bookRepository.findById(ulysses.getId())).thenReturn(Optional.of(ulysses));
+        when(bookRepository.findByTitle(ulysses.getTitle())).thenReturn(Optional.of(ulysses));
 
-        shell.evaluate(() -> "ci 1 Second,comment");
+        shell.evaluate(() -> "ci Ulysses Second,comment");
 
         verify(commentRepository, times(1)).save
-                (new Comment(0L, "Second comment", ulysses));
+                (new Comment("Second comment", ulysses));
     }
 
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void shouldReturnCorrectMessageAfterInsertMethodInvocation() {
-        final Genre genre = new Genre(1L, "genre");
-        final Author author = new Author(1L, "author");
-        final Book book = new Book(1L, "book", author, genre);
+        final Genre genre = new Genre("genre");
+        final Author author = new Author("author");
+        final Book book = new Book("book", author, genre);
 
-        when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
+        when(bookRepository.findByTitle("Ulysses")).thenReturn(Optional.of(book));
 
         final String expected = "You successfully added a comment to book";
-        final String actual = shell.evaluate(() -> "cInsert 1 Second,comment,to,Ulysses").toString();
-
-        assertEquals(expected, actual);
-    }
-
-    @Test
-    void testGetCommentByIdByMessageComparison() {
-        when(commentRepository.findById(1L)).thenReturn(Optional.of(comment));
-
-        final String expected = Optional.of(comment).get().toString();
-        final String actual = shell.evaluate(() -> "commentById 1").toString();
+        final String actual = shell.evaluate(() -> "cInsert Ulysses Second,comment,to,Ulysses").toString();
 
         assertEquals(expected, actual);
     }
@@ -91,10 +88,11 @@ class CommentCommandsTest {
 
     @Test
     void shouldReturnCorrectMessageAfterUpdateMethod() {
-        when(bookRepository.findById(1L)).thenReturn(Optional.of(ulysses));
+        when(commentRepository.findBookByComment("Published in 1922")).thenReturn(Optional.of(comment));
+        when(commentRepository.findByContent("Published in 1922")).thenReturn(Optional.of(comment));
 
         final String expected = "Ulysses comment was updated";
-        final String actual = shell.evaluate(() -> "cUpdate 1 1 Good,book").toString();
+        final String actual = shell.evaluate(() -> "cUpdate Published,in,1922 Good,book").toString();
 
         assertEquals(expected, actual);
     }
@@ -102,12 +100,12 @@ class CommentCommandsTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void shouldReturnCorrectMessageAfterDeleteMethod() {
-        when(commentRepository.findById(1L)).thenReturn(Optional.of(comment));
-        when(bookRepository.findByComment_Content(comment.getContent()))
-                .thenReturn(Optional.of(ulysses));
+        when(commentRepository.findByContent("Published in 1922")).thenReturn(Optional.of(comment));
+        when(commentRepository.findBookByComment(comment.getContent()))
+                .thenReturn(Optional.of(comment));
 
         final String expected = "Ulysses comment was deleted";
-        final String actual = shell.evaluate(() -> "cDelete 1").toString();
+        final String actual = shell.evaluate(() -> "cDelete Published,in,1922").toString();
 
         assertEquals(expected, actual);
     }

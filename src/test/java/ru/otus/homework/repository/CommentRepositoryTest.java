@@ -1,33 +1,33 @@
 package ru.otus.homework.repository;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import ru.otus.homework.domain.Author;
 import ru.otus.homework.domain.Book;
 import ru.otus.homework.domain.Comment;
 import ru.otus.homework.domain.Genre;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@DataJpaTest
+@DataMongoTest
 class CommentRepositoryTest {
     @Autowired
     private CommentRepository repository;
+    final Book ulysses = new Book("Ulysses", new Author("James Joyce"),
+            new Genre("Modernist novel"));
 
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
+    @BeforeEach
+    void setUp() {
+        repository.save(new Comment("Published in 1922", ulysses));
+    }
+
     @Test
-    void testUpdateByComparing() {
-        final Book ulysses = new Book(1L, "Ulysses", new Author(1L, "James Joyce"),
-                new Genre(1L, "Modernist novel"));
-        final Comment expected = new Comment(1L, "Published in 1975", ulysses);
+    void shouldReturnCorrectBookByComment() {
+        final Book actual = repository.findBookByComment("Published in 1922").orElseThrow
+                (() -> new IllegalArgumentException("Incorrect comment content")).getBook();
 
-        repository.update(expected.getContent(), expected.getBook(), expected.getId());
-
-        final Comment actual = repository.findById(1L).orElseThrow(() ->
-                new IllegalArgumentException("Incorrect id"));
-
-        assertEquals(expected, actual);
+        assertEquals(ulysses, actual);
     }
 }

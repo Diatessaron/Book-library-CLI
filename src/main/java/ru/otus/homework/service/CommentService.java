@@ -5,9 +5,7 @@ import ru.otus.homework.domain.Comment;
 import java.util.List;
 
 public interface CommentService {
-    String saveComment(long bookId, String commentContent);
-
-    Comment getCommentById(long id);
+    String saveComment(String bookTitle, String commentContent);
 
     Comment getCommentByContent(String content);
 
@@ -15,7 +13,7 @@ public interface CommentService {
 
     List<Comment> getAll();
 
-    String updateComment(long bookId, long commentId, String commentContent);
+    String updateComment(String oldCommentContent, String commentContent);
 
-    String deleteById(long id);
+    String deleteByContent(String content);
 }

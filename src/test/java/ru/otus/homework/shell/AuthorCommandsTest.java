@@ -23,31 +23,13 @@ class AuthorCommandsTest {
 
     @Autowired
     private Shell shell;
-    public final Author jamesJoyce = new Author(1, "James Joyce");
-
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
-    @Test
-    void testInsertMethodByTimesOfInvocation() {
-        shell.evaluate(() -> "aInsert Michel,Foucault");
-
-        verify(authorRepository, times(1))
-                .save(new Author(0L, "Michel Foucault"));
-    }
+    public final Author jamesJoyce = new Author("James Joyce");
 
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void shouldReturnCorrectMessage() {
         final String expected = "You successfully saved a Michel Foucault to repository";
         final String actual = shell.evaluate(() -> "aInsert Michel,Foucault").toString();
-
-        assertEquals(expected, actual);
-    }
-
-    @Test
-    void testGetAuthorByIdByMessageComparison() {
-        when(authorRepository.findById(1L)).thenReturn(Optional.of(jamesJoyce));
-        final String expected = jamesJoyce.toString();
-        final String actual = shell.evaluate(() -> "authorById 1").toString();
 
         assertEquals(expected, actual);
     }
@@ -72,8 +54,10 @@ class AuthorCommandsTest {
 
     @Test
     void shouldReturnCorrectMessageAfterUpdateMethod() {
+        when(authorRepository.findByName("James Joyce")).thenReturn(Optional.of(jamesJoyce));
+
         final String expected = "Michel Foucault was updated";
-        final String actual = shell.evaluate(() -> "aUpdate 1 Michel,Foucault").toString();
+        final String actual = shell.evaluate(() -> "aUpdate James,Joyce Michel,Foucault").toString();
 
         assertEquals(expected, actual);
     }
@@ -81,10 +65,10 @@ class AuthorCommandsTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     @Test
     void shouldReturnCorrectMessageAfterDeleteMethod() {
-        when(authorRepository.findById(1L)).thenReturn(Optional.of(jamesJoyce));
+        when(authorRepository.findByName("James Joyce")).thenReturn(Optional.of(jamesJoyce));
 
         final String expected = "James Joyce was deleted";
-        final String actual = shell.evaluate(() -> "aDelete 1").toString();
+        final String actual = shell.evaluate(() -> "aDelete James,Joyce").toString();
 
         assertEquals(expected, actual);
     }
@@ -92,11 +76,11 @@ class AuthorCommandsTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void bookShouldBeDeletedBeforeAuthorDeletion() {
-        when(authorRepository.findById(1L)).thenReturn(Optional.of(jamesJoyce));
-        shell.evaluate(() -> "aDelete 1");
+        when(authorRepository.findByName("James Joyce")).thenReturn(Optional.of(jamesJoyce));
+        shell.evaluate(() -> "aDelete James,Joyce");
 
         final InOrder inOrder = inOrder(authorRepository);
-        inOrder.verify(authorRepository).findById(1L);
-        inOrder.verify(authorRepository).deleteById(1L);
+        inOrder.verify(authorRepository).findByName("James Joyce");
+        inOrder.verify(authorRepository).deleteByName("James Joyce");
     }
 }

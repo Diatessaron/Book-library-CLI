@@ -21,22 +21,14 @@ public class CommentServiceImpl implements CommentService {
 
     @Transactional
     @Override
-    public String saveComment(long bookId, String commentContent) {
-        final Book book = bookRepository.findById(bookId).orElseThrow(
-                () -> new IllegalArgumentException("Incorrect id"));
-        final Comment comment = new Comment(0L, commentContent, book);
+    public String saveComment(String bookTitle, String commentContent) {
+        final Book book = bookRepository.findByTitle(bookTitle).orElseThrow(
+                () -> new IllegalArgumentException("Incorrect book title"));
+        final Comment comment = new Comment(commentContent, book);
 
         commentRepository.save(comment);
-        bookRepository.save(book);
 
         return "You successfully added a comment to " + book.getTitle();
-    }
-
-    @Transactional(readOnly = true)
-    @Override
-    public Comment getCommentById(long id) {
-        return commentRepository.findById(id).orElseThrow
-                (() -> new IllegalArgumentException("Incorrect id"));
     }
 
     @Transactional(readOnly = true)
@@ -49,8 +41,8 @@ public class CommentServiceImpl implements CommentService {
     @Transactional(readOnly = true)
     @Override
     public List<Comment> getCommentsByBook(String bookTitle) {
-        return commentRepository.findByBook_Id(bookRepository.findByTitle(bookTitle)
-                .orElseThrow(() -> new IllegalArgumentException("Incorrect book name")).getId());
+        return commentRepository.findByBook_title(bookRepository.findByTitle(bookTitle)
+                .orElseThrow(() -> new IllegalArgumentException("Incorrect book name")).getTitle());
     }
 
     @Transactional(readOnly = true)
@@ -61,24 +53,26 @@ public class CommentServiceImpl implements CommentService {
 
     @Transactional
     @Override
-    public String updateComment(long bookId, long commentId, String commentContent) {
-        final Book book = bookRepository.findById(bookId).orElseThrow(
-                () -> new IllegalArgumentException("Incorrect id"));
+    public String updateComment(String oldCommentContent, String commentContent) {
+        final Book book = commentRepository.findBookByComment(oldCommentContent).orElseThrow(
+                () -> new IllegalArgumentException("Incorrect comment content")).getBook();
 
-        commentRepository.update(commentContent, book, commentId);
+        final Comment comment = commentRepository.findByContent(oldCommentContent).orElseThrow
+                (() -> new IllegalArgumentException("Incorrect comment content"));
+        comment.setContent(commentContent);
+
+        commentRepository.deleteByContent(oldCommentContent);
+        commentRepository.save(comment);
 
         return book.getTitle() + " comment was updated";
     }
 
     @Transactional
     @Override
-    public String deleteById(long id) {
-        final Comment comment = commentRepository.findById(id).orElseThrow(
-                () -> new IllegalArgumentException("Incorrect comment id"));
-
-        final Book book = bookRepository.findByComment_Content(comment.getContent())
-                .orElseThrow(() -> new IllegalArgumentException("Incorrect comment content"));
-        commentRepository.deleteById(id);
+    public String deleteByContent(String content) {
+        final Book book = commentRepository.findBookByComment(content)
+                .orElseThrow(() -> new IllegalArgumentException("Incorrect comment content")).getBook();
+        commentRepository.deleteByContent(content);
 
         return book.getTitle() + " comment was deleted";
     }

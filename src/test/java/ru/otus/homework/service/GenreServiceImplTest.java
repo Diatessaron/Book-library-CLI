@@ -1,5 +1,6 @@
 package ru.otus.homework.service;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,24 +17,22 @@ class GenreServiceImplTest {
     @Autowired
     private GenreServiceImpl service;
 
-    private final Genre expectedNovel = new Genre(1L, "Modernist novel");
+    private final Genre expectedNovel = new Genre("Modernist novel");
+
+    @BeforeEach
+    void setUp(){
+        service.saveGenre(expectedNovel.getName());
+    }
 
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void testSaveByComparing() {
-        final Genre philosophy = new Genre(0L, "Philosophy");
+        final Genre philosophy = new Genre("Philosophy");
         service.saveGenre(philosophy.getName());
 
-        final Genre actual = service.getGenreById(2L);
+        final Genre actual = service.getGenreByName("Philosophy");
 
         assertEquals(philosophy.getName(), actual.getName());
-    }
-
-    @Test
-    void  shouldReturnCorrectGenreById() {
-        final Genre actual = service.getGenreById(1L);
-
-        assertEquals(expectedNovel, actual);
     }
 
     @Test
@@ -48,10 +47,10 @@ class GenreServiceImplTest {
         assertThrows(IllegalArgumentException.class, () -> service.getGenreByName("genre"));
     }
 
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     @Test
     void shouldReturnCorrectListOfGenre(){
-        final Genre philosophy = new Genre(0, "Philosophy");
+        final Genre philosophy = new Genre("Philosophy");
         final List<Genre> expected = List.of(expectedNovel, philosophy);
 
         service.saveGenre(philosophy.getName());
@@ -66,9 +65,9 @@ class GenreServiceImplTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void testUpdateAuthorMethodByComparing() {
-        service.updateGenre(1L, "Genre");
+        service.updateGenre("Modernist novel", "Genre");
 
-        final Genre actualGenre = service.getGenreById(1L);
+        final Genre actualGenre = service.getGenreByName("Genre");
         assertThat(actualGenre).isNotNull().matches(s -> !s.getName().isBlank())
                 .matches(s -> s.getName().equals("Genre"));
     }
@@ -76,8 +75,10 @@ class GenreServiceImplTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void authorShouldBeDeletedCorrectly() {
-        final String expected = "Modernist novel was deleted";
-        final String actual = service.deleteGenreById(1L);
+        service.saveGenre("Genre");
+
+        final String expected = "Genre was deleted";
+        final String actual = service.deleteGenreByName("Genre");
 
         assertEquals(expected, actual);
     }

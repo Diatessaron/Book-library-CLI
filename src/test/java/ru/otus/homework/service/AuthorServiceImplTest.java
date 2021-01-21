@@ -1,40 +1,36 @@
 package ru.otus.homework.service;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.otus.homework.domain.Author;
 
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 class AuthorServiceImplTest {
     @Autowired
     private AuthorServiceImpl service;
 
-    private final Author jamesJoyce = new Author(1L, "James Joyce");
+    private final Author jamesJoyce = new Author("James Joyce");
+
+    @BeforeEach
+    void setUp(){
+        service.saveAuthor(jamesJoyce.getName());
+    }
 
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void testSaveByComparing() {
-        final Author foucault = new Author(0L, "Michel Foucault");
+        final Author foucault = new Author("Michel Foucault");
         service.saveAuthor(foucault.getName());
 
-        final Author actual = service.getAuthorById(2L);
+        final Author actual = service.getAuthorByName("Michel Foucault");
 
         assertEquals(foucault.getName(), actual.getName());
-    }
-
-    @Test
-    void shouldReturnCorrectAuthorById() {
-        final Author actual = service.getAuthorById(1L);
-
-        assertEquals(jamesJoyce, actual);
     }
 
     @Test
@@ -44,32 +40,12 @@ class AuthorServiceImplTest {
         assertEquals(jamesJoyce, actual);
     }
 
-    @Test
-    void shouldThrowExceptionAfterGetAuthorByNameMethodInvocation() {
-        assertThrows(IllegalArgumentException.class, () -> service.getAuthorByName("author"));
-    }
-
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
-    @Test
-    void shouldReturnCorrectListOfAuthor() {
-        final Author foucault = new Author(0, "Michel Foucault");
-        final List<Author> expected = List.of(this.jamesJoyce, foucault);
-
-        service.saveAuthor(foucault.getName());
-
-        final List<Author> actual = service.getAll();
-
-        assertThat(actual).isNotNull().matches(a -> a.size() == expected.size())
-                .matches(a -> a.get(0).getName().equals(expected.get(0).getName()))
-                .matches(a -> a.get(1).getName().equals(expected.get(1).getName()));
-    }
-
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void testUpdateAuthorMethodByComparing() {
-        service.updateAuthor(1L, "Author");
+        service.updateAuthor("James Joyce", "Author");
 
-        final Author actualAuthor = service.getAuthorById(1L);
+        final Author actualAuthor = service.getAuthorByName("Author");
         assertThat(actualAuthor).isNotNull().matches(s -> !s.getName().isBlank())
                 .matches(s -> s.getName().equals("Author"));
     }
@@ -78,7 +54,7 @@ class AuthorServiceImplTest {
     @Test
     void authorShouldBeDeletedCorrectly() {
         final String expected = "James Joyce was deleted";
-        final String actual = service.deleteAuthorById(1L);
+        final String actual = service.deleteAuthorByName("James Joyce");
 
         assertEquals(expected, actual);
     }

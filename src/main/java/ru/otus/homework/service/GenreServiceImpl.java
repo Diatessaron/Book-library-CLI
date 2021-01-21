@@ -18,17 +18,10 @@ public class GenreServiceImpl implements GenreService {
     @Transactional
     @Override
     public String saveGenre(String name) {
-        final Genre genre = new Genre(0L, name);
+        final Genre genre = new Genre(name);
         genreRepository.save(genre);
 
         return String.format("You successfully saved a %s to repository", genre.getName());
-    }
-
-    @Transactional(readOnly = true)
-    @Override
-    public Genre getGenreById(long id) {
-        return genreRepository.findById(id).orElseThrow
-                (() -> new IllegalArgumentException("Incorrect id"));
     }
 
     @Transactional(readOnly = true)
@@ -46,18 +39,22 @@ public class GenreServiceImpl implements GenreService {
 
     @Transactional
     @Override
-    public String updateGenre(long id, String name) {
-        genreRepository.update(name, id);
+    public String updateGenre(String oldGenreName, String name) {
+        final Genre genre = genreRepository.findByName(oldGenreName).orElseThrow
+                (() -> new IllegalArgumentException("Incorrect genre name"));
+        genreRepository.deleteByName(oldGenreName);
+        genre.setName(name);
+        genreRepository.save(genre);
 
         return String.format("%s was updated", name);
     }
 
     @Transactional
     @Override
-    public String deleteGenreById(long id) {
-        final Genre genre = genreRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Incorrect id"));
-        genreRepository.deleteById(id);
+    public String deleteGenreByName(String name) {
+        final Genre genre = genreRepository.findByName(name)
+                .orElseThrow(() -> new IllegalArgumentException("Incorrect genre name"));
+        genreRepository.deleteByName(name);
 
         return String.format("%s was deleted", genre.getName());
     }
