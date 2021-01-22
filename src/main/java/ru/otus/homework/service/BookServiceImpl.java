@@ -99,7 +99,7 @@ public class BookServiceImpl implements BookService {
     private Author getAuthor(String authorName) {
         final Optional<Author> optionalAuthor = authorRepository.findByName(authorName);
 
-        if(optionalAuthor.isEmpty()) {
+        if (optionalAuthor.isEmpty()) {
             final Author author = new Author(authorName);
             authorRepository.save(author);
             return author;
@@ -110,7 +110,7 @@ public class BookServiceImpl implements BookService {
     private Genre getGenre(String genreName) {
         final Optional<Genre> optionalGenre = genreRepository.findByName(genreName);
 
-        if(optionalGenre.isEmpty()){
+        if (optionalGenre.isEmpty()) {
             final Genre genre = new Genre(genreName);
             genreRepository.save(genre);
             return genre;

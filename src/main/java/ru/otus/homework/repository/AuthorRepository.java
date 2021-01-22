@@ -1,7 +1,6 @@
 package ru.otus.homework.repository;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.data.mongodb.repository.Query;
 import ru.otus.homework.domain.Author;
 
 import java.util.Optional;
