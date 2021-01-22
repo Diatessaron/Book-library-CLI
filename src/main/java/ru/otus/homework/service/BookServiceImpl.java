@@ -41,22 +41,40 @@ public class BookServiceImpl implements BookService {
     @Transactional(readOnly = true)
     @Override
     public Book getBookByTitle(String title) {
-        return bookRepository.findByTitle(title).orElseThrow
-                (() -> new IllegalArgumentException("Incorrect book title"));
+        final List<Book> bookList = bookRepository.findByTitle(title);
+
+        if (bookList.size() > 1)
+            throw new IllegalArgumentException("Not unique result. Please, specify correct argument.");
+        else if (bookList.isEmpty())
+            throw new IllegalArgumentException("Incorrect book title");
+
+        return bookList.get(0);
     }
 
     @Transactional(readOnly = true)
     @Override
     public Book getBookByAuthor(String author) {
-        return bookRepository.findByAuthor_Name(author).orElseThrow
-                (() -> new IllegalArgumentException("Incorrect author name"));
+        final List<Book> bookList = bookRepository.findByAuthor_Name(author);
+
+        if (bookList.size() > 1)
+            throw new IllegalArgumentException("Not unique result. Please, specify correct argument.");
+        else if(bookList.isEmpty())
+            throw new IllegalArgumentException("Incorrect author name");
+
+        return bookList.get(0);
     }
 
     @Transactional(readOnly = true)
     @Override
     public Book getBookByGenre(String genre) {
-        return bookRepository.findByGenre_Name(genre).orElseThrow
-                (() -> new IllegalArgumentException("Incorrect genre name"));
+        final List<Book> bookList = bookRepository.findByGenre_Name(genre);
+
+        if (bookList.size() > 1)
+            throw new IllegalArgumentException("Not unique result. Please, specify correct argument.");
+        else if(bookList.isEmpty())
+            throw new IllegalArgumentException("Incorrect genre name");
+
+        return bookList.get(0);
     }
 
     @Transactional(readOnly = true)
@@ -79,8 +97,13 @@ public class BookServiceImpl implements BookService {
         Author author = getAuthor(authorNameParameter);
         Genre genre = getGenre(genreNameParameter);
 
-        final Book book = bookRepository.findByTitle(oldBookTitle).orElseThrow
-                (() -> new IllegalArgumentException("Incorrect book name"));
+        final List<Book> bookList = bookRepository.findByTitle(oldBookTitle);
+
+        if (bookList.size() > 1)
+            throw new IllegalArgumentException("Not unique result. Please, specify correct argument.");
+
+        final Book book = Optional.of(bookList.get(0))
+                .orElseThrow(() -> new IllegalArgumentException("Incorrect book title"));
         book.setTitle(title);
         book.setAuthor(author);
         book.setGenre(genre);

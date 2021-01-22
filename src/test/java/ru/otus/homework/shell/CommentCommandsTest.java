@@ -42,7 +42,7 @@ class CommentCommandsTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void testInsertMethodByTimesOfRepositoryInvocation() {
-        when(bookRepository.findByTitle(ulysses.getTitle())).thenReturn(Optional.of(ulysses));
+        when(bookRepository.findByTitle(ulysses.getTitle())).thenReturn(List.of(ulysses));
 
         shell.evaluate(() -> "ci Ulysses Second,comment");
 
@@ -57,7 +57,7 @@ class CommentCommandsTest {
         final Author author = new Author("author");
         final Book book = new Book("book", author, genre);
 
-        when(bookRepository.findByTitle("Ulysses")).thenReturn(Optional.of(book));
+        when(bookRepository.findByTitle("Ulysses")).thenReturn(List.of(book));
 
         final String expected = "You successfully added a comment to book";
         final String actual = shell.evaluate(() -> "cInsert Ulysses Second,comment,to,Ulysses").toString();

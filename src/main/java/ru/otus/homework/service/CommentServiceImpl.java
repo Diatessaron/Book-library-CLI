@@ -22,8 +22,14 @@ public class CommentServiceImpl implements CommentService {
     @Transactional
     @Override
     public String saveComment(String bookTitle, String commentContent) {
-        final Book book = bookRepository.findByTitle(bookTitle).orElseThrow(
-                () -> new IllegalArgumentException("Incorrect book title"));
+        final List<Book> bookList = bookRepository.findByTitle(bookTitle);
+
+        if(bookList.size() > 1)
+            throw new IllegalArgumentException("Not unique result. Please, specify correct argument.");
+        else if(bookList.isEmpty())
+            throw new IllegalArgumentException("Incorrect book title");
+
+        final Book book = bookList.get(0);
         final Comment comment = new Comment(commentContent, book);
 
         commentRepository.save(comment);
@@ -41,8 +47,16 @@ public class CommentServiceImpl implements CommentService {
     @Transactional(readOnly = true)
     @Override
     public List<Comment> getCommentsByBook(String bookTitle) {
-        return commentRepository.findByBook_title(bookRepository.findByTitle(bookTitle)
-                .orElseThrow(() -> new IllegalArgumentException("Incorrect book name")).getTitle());
+        final List<Book> bookList = bookRepository.findByTitle(bookTitle);
+
+        if(bookList.size() > 1)
+            throw new IllegalArgumentException("Not unique result. Please, specify correct argument.");
+        else if(bookList.isEmpty())
+            throw new IllegalArgumentException("Incorrect book title");
+
+        final Book book = bookList.get(0);
+
+        return commentRepository.findByBook_title(book.getTitle());
     }
 
     @Transactional(readOnly = true)

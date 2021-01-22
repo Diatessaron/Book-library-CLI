@@ -86,7 +86,7 @@ class BookCommandsTest {
 
     @Test
     void testGetBookByTitleByMessageComparison() {
-        when(bookRepository.findByTitle(ulysses.getTitle())).thenReturn(Optional.of(ulysses));
+        when(bookRepository.findByTitle(ulysses.getTitle())).thenReturn(List.of(ulysses));
         final String expected = ulysses.toString();
         final String actual = shell.evaluate(() -> "bookByTitle Ulysses").toString();
 
@@ -96,7 +96,7 @@ class BookCommandsTest {
     @Test
     void testGetBookByAuthorByMessageComparison() {
         when(bookRepository.findByAuthor_Name(ulysses.getAuthor().getName())).thenReturn
-                (Optional.of(ulysses));
+                (List.of(ulysses));
         final String expected = ulysses.toString();
         final String actual = shell.evaluate(() -> "bookByAuthor James,Joyce").toString();
 
@@ -106,7 +106,7 @@ class BookCommandsTest {
     @Test
     void testGetBookByGenreByMessageComparison() {
         when(bookRepository.findByGenre_Name(ulysses.getGenre().getName())).thenReturn
-                (Optional.of(ulysses));
+                (List.of(ulysses));
         final String expected = ulysses.toString();
         final String actual = shell.evaluate(() -> "bookByGenre Modernist,novel").toString();
 
@@ -130,7 +130,7 @@ class BookCommandsTest {
         when(genreRepository.findByName("Philosophy")).thenReturn
                 (Optional.of(new Genre("Philosophy")));
         when(bookRepository.findByTitle("Ulysses")).thenReturn
-                (Optional.of(ulysses));
+                (List.of(ulysses));
 
         final String expected = "Discipline and Punish was updated";
         final String actual = shell.evaluate(() -> "bUpdate Ulysses Discipline,and,Punish Michel,Foucault Philosophy").toString();
@@ -146,7 +146,7 @@ class BookCommandsTest {
         when(genreRepository.findByName("Philosophy")).thenReturn
                 (Optional.of(new Genre("Philosophy")));
         when(bookRepository.findByTitle("Ulysses")).thenReturn
-                (Optional.of(ulysses));
+                (List.of(ulysses));
 
         final String expected = "A Portrait of the Artist as a Young Man was updated";
         final String actual = shell.evaluate(() -> "bUpdate Ulysses A,Portrait,of,the,Artist,as,a,Young,Man " +
@@ -157,7 +157,7 @@ class BookCommandsTest {
 
     @Test
     void shouldReturnCorrectMessageAfterDeleteMethod() {
-        when(bookRepository.findByTitle("Ulysses")).thenReturn(Optional.of(ulysses));
+        when(bookRepository.findByTitle("Ulysses")).thenReturn(List.of(ulysses));
         final String expected = "Ulysses was deleted";
         final String actual = shell.evaluate(() -> "bDelete Ulysses").toString();
 
