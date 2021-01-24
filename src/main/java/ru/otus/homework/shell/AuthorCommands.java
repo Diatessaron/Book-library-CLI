@@ -13,13 +13,13 @@ public class AuthorCommands {
         this.service = service;
     }
 
-    @ShellMethod(key = {"ai", "aInsert"}, value = "Insert author. Arguments: author. " +
+    @ShellMethod(key = {"ai", "aInsert"}, value = "Insert author. Arguments: authorName. " +
             "Please, put comma instead of space in each argument or simply put the arguments in quotes.")
     public String insert(@ShellOption("Author") String authorName) {
         return service.saveAuthor(reformatString(authorName));
     }
 
-    @ShellMethod(key = {"abn", "authorByName"}, value = "Get author by name. " +
+    @ShellMethod(key = {"abn", "authorByName"}, value = "Get author by name. Arguments: authorName. " +
             "Please, put comma instead of space in each argument or simply put the arguments in quotes.")
     public String getAuthorByName(@ShellOption("Name") String name) {
         return service.getAuthorByName(reformatString(name)).toString();
@@ -38,7 +38,8 @@ public class AuthorCommands {
         return service.updateAuthor(reformatString(oldAuthorName), reformatString(name));
     }
 
-    @ShellMethod(key = {"ad", "aDelete"}, value = "Delete author by name")
+    @ShellMethod(key = {"ad", "aDelete"}, value = "Delete author by name. Arguments: authorName. " +
+            "Please, put comma instead of space in each argument or simply put the arguments in quotes.")
     public String deleteByName(@ShellOption("Name") String name) {
         return service.deleteAuthorByName(reformatString(name));
     }

@@ -17,12 +17,7 @@ class AuthorServiceImplTest {
 
     private final Author jamesJoyce = new Author("James Joyce");
 
-    @BeforeEach
-    void setUp(){
-        service.saveAuthor(jamesJoyce.getName());
-    }
-
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     @Test
     void testSaveByComparing() {
         final Author foucault = new Author("Michel Foucault");

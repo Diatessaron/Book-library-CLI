@@ -8,3 +8,8 @@ spring:
 logging:
   level:
     ROOT: ERROR
+
+mongock:
+  runner-type: "InitializingBean"
+  change-logs-scan-package:
+    - ru.otus.homework.mongock.changelog

@@ -1,6 +1,5 @@
 package ru.otus.homework.shell;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -32,7 +31,6 @@ class BookCommandsTest {
     private final Book ulysses = new Book("Ulysses", new Author("James Joyce"),
             new Genre("Modernist novel"));
 
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void testInsertMethodByTimesOfRepositoryInvocation() {
         final Author author = new Author("author");
@@ -47,7 +45,6 @@ class BookCommandsTest {
         verify(bookRepository, times(1)).save(book);
     }
 
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void shouldReturnCorrectMessageAfterInsertMethod() {
         when(authorRepository.findByName("author")).thenReturn(Optional.of
@@ -60,7 +57,6 @@ class BookCommandsTest {
         assertEquals(expected, actual);
     }
 
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void shouldReturnCorrectMessageWithMultipleArgumentsAfterInsertMethod() {
         when(authorRepository.findByName("author")).thenReturn(Optional.of
@@ -73,7 +69,6 @@ class BookCommandsTest {
         assertEquals(expected, actual);
     }
 
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void shouldReturnCorrectMessageAfterInsertMethodWithOldAuthorAndGenre() {
         final String expected = "You successfully inserted a A Portrait of the Artist as a Young Man " +
@@ -138,7 +133,6 @@ class BookCommandsTest {
         assertEquals(expected, actual);
     }
 
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void shouldReturnCorrectMessageAfterUpdateMethodWithOldAuthorAndGenre() {
         when(authorRepository.findByName("Michel Foucault")).thenReturn

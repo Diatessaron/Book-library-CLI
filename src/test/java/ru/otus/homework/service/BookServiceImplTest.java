@@ -22,13 +22,7 @@ class BookServiceImplTest {
     private final Book expectedUlysses = new Book("Ulysses", new Author("James Joyce"),
             new Genre("Modernist novel"));
 
-    @BeforeEach
-    void setUp(){
-        service.saveBook(expectedUlysses.getTitle(), expectedUlysses.getAuthor().getName(),
-                expectedUlysses.getGenre().getName());
-    }
-
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void testSaveBookMethodWithParameters() {
         service.saveBook("Discipline and Punish", "Michel Foucault",
@@ -41,7 +35,7 @@ class BookServiceImplTest {
                 .matches(s -> s.getGenre().getName().equals("Philosophy"));
     }
 
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void testSaveBookMethodWithOldAuthorAndGenre() {
         service.saveBook("A Portrait of the Artist as a Young Man",
@@ -54,7 +48,6 @@ class BookServiceImplTest {
                 .matches(s -> s.getGenre().getName().equals("Modernist novel"));
     }
 
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     @Test
     void shouldReturnCorrectBookByTitle() {
         final Book actual = service.getBookByTitle(expectedUlysses.getTitle());
@@ -69,7 +62,7 @@ class BookServiceImplTest {
         assertEquals(expectedUlysses, actual);
     }
 
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void shouldReturnCorrectListOfBooks() {
         final Author author = new Author("Michel Foucault");
@@ -97,7 +90,7 @@ class BookServiceImplTest {
                 .matches(s -> s.getGenre().getName().equals("Philosophy"));
     }
 
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void testUpdateBookMethodWithOldAuthorAndGenre() {
         service.updateBook("Ulysses", "A Portrait of the Artist as a Young Man",

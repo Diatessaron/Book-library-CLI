@@ -9,30 +9,31 @@ import java.util.Objects;
 public class Comment {
     @Field(name = "content")
     private String content;
-    private Book book;
+    @Field(name = "bookTitle")
+    private String bookTitle;
 
     public Comment() {
     }
 
-    public Comment(String content, Book book) {
+    public Comment(String content, String bookTitle) {
         this.content = content;
-        this.book = book;
+        this.bookTitle = bookTitle;
     }
 
     public String getContent() {
         return content;
     }
 
-    public Book getBook() {
-        return book;
+    public String getBookTitle() {
+        return bookTitle;
     }
 
     public void setContent(String content) {
         this.content = content;
     }
 
-    public void setBook(Book book) {
-        this.book = book;
+    public void setBookTitle(String bookTitle) {
+        this.bookTitle = bookTitle;
     }
 
     @Override
@@ -40,17 +41,17 @@ public class Comment {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Comment comment = (Comment) o;
-        return content.equals(comment.content) && book.equals(comment.book);
+        return content.equals(comment.content) && bookTitle.equals(comment.bookTitle);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(content, book);
+        return Objects.hash(content, bookTitle);
     }
 
     @Override
     public String toString() {
         return "Comment '" + content +
-                "' to book " + book.getTitle();
+                "' to book " + bookTitle;
     }
 }

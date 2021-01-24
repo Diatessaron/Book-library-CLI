@@ -25,25 +25,25 @@ public class BookCommands {
                 reformatString(title));
     }
 
-    @ShellMethod(key = {"bbt", "bookByTitle"}, value = "Get book by title. " +
+    @ShellMethod(key = {"bbt", "bookByTitle"}, value = "Get book by title. Arguments: bookTitle. " +
             "Please, put comma instead of space in each argument or simply put the arguments in quotes.")
     public String getBookByTitle(@ShellOption("Title") String title) {
         return bookService.getBookByTitle(reformatString(title)).toString();
     }
 
-    @ShellMethod(key = {"bba", "bookByAuthor"}, value = "Get book by author. " +
+    @ShellMethod(key = {"bba", "bookByAuthor"}, value = "Get book by author. Arguments: authorName. " +
             "Please, put comma instead of space in each argument or simply put the arguments in quotes.")
     public String getBookByAuthor(@ShellOption("Author") String author) {
         return bookService.getBookByAuthor(reformatString(author)).toString();
     }
 
-    @ShellMethod(key = {"bbg", "bookByGenre"}, value = "Get book by genre. " +
+    @ShellMethod(key = {"bbg", "bookByGenre"}, value = "Get book by genre. Arguments: genre. " +
             "Please, put comma instead of space in each argument or simply put the arguments in quotes.")
     public String getBookByGenre(@ShellOption("Genre") String genre) {
         return bookService.getBookByGenre(reformatString(genre)).toString();
     }
 
-    @ShellMethod(key = {"bbc", "bByComment", "bookByComment"}, value = "Get book by comment. " +
+    @ShellMethod(key = {"bbc", "bByComment", "bookByComment"}, value = "Get book by comment. Arguments: comment. " +
             "Please, put comma instead of space in each argument or simply put the arguments in quotes.")
     public String getBookByComment(@ShellOption("Comment") String commentContent) {
         return bookService.getBookByComment(reformatString(commentContent)).toString();
@@ -66,10 +66,11 @@ public class BookCommands {
         return String.format("%s was updated", reformatString(title));
     }
 
-    @ShellMethod(key = {"bd", "bDelete"}, value = "Delete book by name")
-    public String deleteByName(@ShellOption("Name") String name) {
-        final Book book = bookService.getBookByTitle(reformatString(name));
-        bookService.deleteBookByTitle(reformatString(name));
+    @ShellMethod(key = {"bd", "bDelete"}, value = "Delete book by title. Arguments: bookTitle. " +
+            "Please, put comma instead of space in each argument or simply put the arguments in quotes.")
+    public String deleteByTitle(@ShellOption("Title") String title) {
+        final Book book = bookService.getBookByTitle(reformatString(title));
+        bookService.deleteBookByTitle(reformatString(title));
         return String.format("%s was deleted", book.getTitle());
     }
 

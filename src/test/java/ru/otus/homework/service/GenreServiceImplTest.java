@@ -19,11 +19,6 @@ class GenreServiceImplTest {
 
     private final Genre expectedNovel = new Genre("Modernist novel");
 
-    @BeforeEach
-    void setUp(){
-        service.saveGenre(expectedNovel.getName());
-    }
-
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void testSaveByComparing() {
@@ -47,7 +42,7 @@ class GenreServiceImplTest {
         assertThrows(IllegalArgumentException.class, () -> service.getGenreByName("genre"));
     }
 
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void shouldReturnCorrectListOfGenre(){
         final Genre philosophy = new Genre("Philosophy");

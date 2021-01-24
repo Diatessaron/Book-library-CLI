@@ -1,6 +1,5 @@
 package ru.otus.homework.service;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
@@ -27,13 +26,7 @@ class CommentServiceImplTest {
 
     private final Book ulysses = new Book("Ulysses", new Author("James Joyce"),
             new Genre("Modernist novel"));
-    private final Comment ulyssesComment = new Comment("Published in 1922", ulysses);
-
-    @BeforeEach
-    void setUp(){
-        bookRepository.save(ulysses);
-        commentService.saveComment(ulyssesComment.getBook().getTitle(), ulyssesComment.getContent());
-    }
+    private final Comment ulyssesComment = new Comment("Published in 1922", ulysses.getTitle());
 
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
@@ -41,16 +34,15 @@ class CommentServiceImplTest {
         final Author foucault = new Author("Michel Foucault");
         final Genre philosophy = new Genre("Philosophy");
         final Book book = new Book("Discipline and Punish", foucault, philosophy);
-        final Comment expected = new Comment("Published in 1975", book);
+        final Comment expected = new Comment("Published in 1975", book.getTitle());
 
         bookRepository.save(book);
-        commentService.saveComment(expected.getBook().getTitle(), expected.getContent());
+        commentService.saveComment(expected.getBookTitle(), expected.getContent());
         final Comment actual = commentService.getCommentByContent(expected.getContent());
 
         assertEquals(expected.getContent(), actual.getContent());
     }
 
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void shouldReturnCorrectCommentByContent() {
         final Comment actual = commentService.getCommentByContent(ulyssesComment.getContent());
@@ -66,18 +58,18 @@ class CommentServiceImplTest {
         assertEquals(expected, actual);
     }
 
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void shouldReturnCorrectListOfComments(){
         final Author foucault = new Author("Michel Foucault");
         final Genre philosophy = new Genre("Philosophy");
         final Book book = new Book("Discipline and Punish", foucault, philosophy);
 
-        final Comment disciplineAndPunishComment = new Comment("Published in 1975", book);
+        final Comment disciplineAndPunishComment = new Comment("Published in 1975", book.getTitle());
         final List<Comment> expected = List.of(this.ulyssesComment, disciplineAndPunishComment);
 
         bookRepository.save(book);
-        commentService.saveComment(disciplineAndPunishComment.getBook().getTitle(),
+        commentService.saveComment(disciplineAndPunishComment.getBookTitle(),
                 disciplineAndPunishComment.getContent());
         final List<Comment> actual = commentService.getAll();
 

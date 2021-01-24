@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.shell.Shell;
-import org.springframework.test.annotation.DirtiesContext;
 import ru.otus.homework.domain.Author;
 import ru.otus.homework.repository.AuthorRepository;
 
@@ -14,7 +13,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest
 class AuthorCommandsTest {
@@ -25,7 +25,6 @@ class AuthorCommandsTest {
     private Shell shell;
     public final Author jamesJoyce = new Author("James Joyce");
 
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void shouldReturnCorrectMessage() {
         final String expected = "You successfully saved a Michel Foucault to repository";
@@ -62,7 +61,6 @@ class AuthorCommandsTest {
         assertEquals(expected, actual);
     }
 
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     @Test
     void shouldReturnCorrectMessageAfterDeleteMethod() {
         when(authorRepository.findByName("James Joyce")).thenReturn(Optional.of(jamesJoyce));
@@ -73,7 +71,6 @@ class AuthorCommandsTest {
         assertEquals(expected, actual);
     }
 
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void bookShouldBeDeletedBeforeAuthorDeletion() {
         when(authorRepository.findByName("James Joyce")).thenReturn(Optional.of(jamesJoyce));

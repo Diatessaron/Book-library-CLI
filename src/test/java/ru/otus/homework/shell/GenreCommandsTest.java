@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.shell.Shell;
-import org.springframework.test.annotation.DirtiesContext;
 import ru.otus.homework.domain.Genre;
 import ru.otus.homework.repository.GenreRepository;
 
@@ -25,7 +24,6 @@ class GenreCommandsTest {
     private Shell shell;
     private final Genre novel = new Genre("Modernist novel");
 
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void testInsertMethodByTimesOfRepositoryInvocation() {
         shell.evaluate(() -> "gInsert Philosophy");
@@ -33,7 +31,6 @@ class GenreCommandsTest {
         verify(genreRepository, times(1)).save(new Genre("Philosophy"));
     }
 
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void shouldReturnCorrectMessage() {
         final String expected = "You successfully saved a philosophy to repository";
@@ -60,7 +57,6 @@ class GenreCommandsTest {
         assertEquals(expected, actual);
     }
 
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     @Test
     void shouldReturnCorrectMessageAfterUpdateMethod() {
         when(genreRepository.findByName("Modernist novel")).thenReturn(Optional.of(novel));
@@ -70,7 +66,6 @@ class GenreCommandsTest {
         assertEquals(expected, actual);
     }
 
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     @Test
     void shouldReturnCorrectMessageAfterDeleteMethod() {
         when(genreRepository.findByName("Modernist novel")).thenReturn(Optional.of(novel));
@@ -81,7 +76,6 @@ class GenreCommandsTest {
         assertEquals(expected, actual);
     }
 
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void bookShouldBeDeletedBeforeGenreDeletion() {
         when(genreRepository.findByName("Modernist novel")).thenReturn(Optional.of(novel));
