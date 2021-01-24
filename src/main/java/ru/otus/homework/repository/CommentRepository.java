@@ -9,7 +9,9 @@ import java.util.Optional;
 public interface CommentRepository extends MongoRepository<Comment, String> {
     Optional<Comment> findByContent(String content);
 
-    List<Comment> findByBookTitle(String bookTitle);
+    List<Comment> findByBook_Title(String bookTitle);
 
     void deleteByContent(String content);
+
+    void deleteByBook_Title(String bookTitle);
 }

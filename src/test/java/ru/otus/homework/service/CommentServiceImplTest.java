@@ -37,7 +37,7 @@ class CommentServiceImplTest {
         final Comment expected = new Comment("Published in 1975", book.getTitle());
 
         bookRepository.save(book);
-        commentService.saveComment(expected.getBookTitle(), expected.getContent());
+        commentService.saveComment(expected.getBook().getTitle(), expected.getContent());
         final Comment actual = commentService.getCommentByContent(expected.getContent());
 
         assertEquals(expected.getContent(), actual.getContent());
@@ -69,7 +69,7 @@ class CommentServiceImplTest {
         final List<Comment> expected = List.of(this.ulyssesComment, disciplineAndPunishComment);
 
         bookRepository.save(book);
-        commentService.saveComment(disciplineAndPunishComment.getBookTitle(),
+        commentService.saveComment(disciplineAndPunishComment.getBook().getTitle(),
                 disciplineAndPunishComment.getContent());
         final List<Comment> actual = commentService.getAll();
 

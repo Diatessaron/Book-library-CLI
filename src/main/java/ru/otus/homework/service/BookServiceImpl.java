@@ -1,9 +1,5 @@
 package ru.otus.homework.service;
 
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.otus.homework.domain.Author;
@@ -24,16 +20,13 @@ public class BookServiceImpl implements BookService {
     private final AuthorRepository authorRepository;
     private final GenreRepository genreRepository;
     private final CommentRepository commentRepository;
-    private final MongoTemplate mongoTemplate;
 
     public BookServiceImpl(BookRepository bookRepository, AuthorRepository authorRepository,
-                           GenreRepository genreRepository, CommentRepository commentRepository,
-                           MongoTemplate mongoTemplate) {
+                           GenreRepository genreRepository, CommentRepository commentRepository) {
         this.bookRepository = bookRepository;
         this.authorRepository = authorRepository;
         this.genreRepository = genreRepository;
         this.commentRepository = commentRepository;
-        this.mongoTemplate = mongoTemplate;
     }
 
     @Transactional
@@ -89,7 +82,7 @@ public class BookServiceImpl implements BookService {
     @Override
     public Book getBookByComment(String comment) {
         final List<Book> bookList = bookRepository.findByTitle(commentRepository.findByContent(comment)
-                .orElseThrow(() -> new IllegalArgumentException("Incorrect book comment")).getBookTitle());
+                .orElseThrow(() -> new IllegalArgumentException("Incorrect book comment")).getBook().getTitle());
 
         if (bookList.size() > 1)
             throw new IllegalArgumentException("Not unique result. Please, specify correct argument.");
@@ -112,29 +105,31 @@ public class BookServiceImpl implements BookService {
         Author author = getAuthor(authorNameParameter);
         Genre genre = getGenre(genreNameParameter);
 
-        Query query = new Query();
-        query.addCriteria(Criteria.where("title").is(oldBookTitle));
-        Update update = new Update();
-        update.set("title", title);
-        update.set("author", author);
-        update.set("genre", genre);
-        mongoTemplate.updateFirst(query, update, Book.class);
+        final List<Book> bookList = bookRepository.findByTitle(oldBookTitle);
 
-        query = new Query();
-        query.addCriteria(Criteria.where("bookTitle").is(oldBookTitle));
-        update = new Update();
-        update.set("bookTitle", title);
-        mongoTemplate.updateFirst(query, update, Comment.class, "comments");
+        if (bookList.size() > 1)
+            throw new IllegalArgumentException("Not unique result. Please, specify correct argument.");
+        else if (bookList.isEmpty())
+            throw new IllegalArgumentException("Incorrect book title");
+
+        final Book book = bookList.get(0);
+        book.setAuthor(author);
+        book.setGenre(genre);
+        book.setTitle(title);
+
+        bookRepository.save(book);
+
+        final List<Comment> commentList = commentRepository.findByBook_Title(oldBookTitle);
+
+        commentList.forEach(c -> c.setBook(title));
+        commentRepository.saveAll(commentList);
     }
 
     @Transactional
     @Override
     public void deleteBookByTitle(String title) {
         bookRepository.deleteByTitle(title);
-
-        Query query = new Query();
-        query.addCriteria(Criteria.where("bookTitle").is(title));
-        mongoTemplate.remove(query, Comment.class, "comments");
+        commentRepository.deleteByBook_Title(title);
     }
 
     private Author getAuthor(String authorName) {

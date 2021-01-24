@@ -1,25 +1,22 @@
 package ru.otus.homework.service;
 
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.otus.homework.domain.Author;
 import ru.otus.homework.domain.Book;
 import ru.otus.homework.repository.AuthorRepository;
+import ru.otus.homework.repository.BookRepository;
 
 import java.util.List;
 
 @Service
 public class AuthorServiceImpl implements AuthorService {
     private final AuthorRepository authorRepository;
-    private final MongoTemplate mongoTemplate;
+    private final BookRepository bookRepository;
 
-    public AuthorServiceImpl(AuthorRepository authorRepository, MongoTemplate mongoTemplate) {
+    public AuthorServiceImpl(AuthorRepository authorRepository, BookRepository bookRepository) {
         this.authorRepository = authorRepository;
-        this.mongoTemplate = mongoTemplate;
+        this.bookRepository = bookRepository;
     }
 
     @Transactional
@@ -46,17 +43,17 @@ public class AuthorServiceImpl implements AuthorService {
     @Transactional
     @Override
     public String updateAuthor(String oldAuthorName, String name) {
-        Query query = new Query();
-        query.addCriteria(Criteria.where("name").is(oldAuthorName));
-        Update update = new Update();
-        update.set("name", name);
-        mongoTemplate.updateFirst(query, update, Author.class);
+        final Author author = authorRepository.findByName(oldAuthorName).orElseThrow
+                (() -> new IllegalArgumentException("Incorrect author name"));
+        author.setName(name);
+        authorRepository.save(author);
 
-        query = new Query();
-        query.addCriteria(Criteria.where("author.name").is(oldAuthorName));
-        update = new Update();
-        update.set("author.name", name);
-        mongoTemplate.updateFirst(query, update, Book.class, "books");
+        final List<Book> bookList = bookRepository.findByAuthor_Name(oldAuthorName);
+
+        if(!bookList.isEmpty()) {
+            bookList.forEach(b -> b.setAuthor(author));
+            bookRepository.saveAll(bookList);
+        }
 
         return String.format("%s was updated", name);
     }
@@ -67,10 +64,7 @@ public class AuthorServiceImpl implements AuthorService {
         final Author author = authorRepository.findByName(name)
                 .orElseThrow(() -> new IllegalArgumentException("Incorrect name"));
         authorRepository.deleteByName(name);
-
-        Query query = new Query();
-        query.addCriteria(Criteria.where("author.name").is(name));
-        mongoTemplate.remove(query, Book.class, "books");
+        bookRepository.deleteByAuthor_Name(name);
 
         return String.format("%s was deleted", author.getName());
     }

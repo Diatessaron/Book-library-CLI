@@ -81,7 +81,7 @@ class CommentCommandsTest {
         when(commentRepository.findByContent(comment.getContent())).thenReturn(Optional.of(comment));
         when(bookRepository.findByTitle(commentRepository.findByContent(comment.getContent())
                 .orElseThrow(() -> new IllegalArgumentException("Incorrect comment content"))
-                .getBookTitle())).thenReturn(List.of(ulysses));
+                .getBook().getTitle())).thenReturn(List.of(ulysses));
 
         final String expected = "Ulysses comment was updated";
         final String actual = shell.evaluate(() -> "cUpdate Published,in,1922 Good,book").toString();
@@ -93,8 +93,8 @@ class CommentCommandsTest {
     void shouldReturnCorrectMessageAfterDeleteMethod() {
         when(commentRepository.findByContent("Published in 1922")).thenReturn(Optional.of(comment));
         when(bookRepository.findByTitle(commentRepository.findByContent(comment.getContent())
-                .orElseThrow(() -> new IllegalArgumentException("Incorrect comment content")).getBookTitle()))
-                .thenReturn(List.of(ulysses));
+                .orElseThrow(() -> new IllegalArgumentException("Incorrect comment content"))
+                .getBook().getTitle())).thenReturn(List.of(ulysses));
 
         final String expected = "Ulysses comment was deleted";
         final String actual = shell.evaluate(() -> "cDelete Published,in,1922").toString();

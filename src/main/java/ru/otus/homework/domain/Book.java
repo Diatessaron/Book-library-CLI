@@ -1,5 +1,6 @@
 package ru.otus.homework.domain;
 
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
@@ -7,9 +8,13 @@ import java.util.Objects;
 
 @Document(collection = "books")
 public class Book {
-    @Field(name = "title")
+    @Id
+    private String id;
+    @Field("title")
     private String title;
+    @Field("author")
     private Author author;
+    @Field("genre")
     private Genre genre;
 
     public Book() {
@@ -19,6 +24,10 @@ public class Book {
         this.title = title;
         this.author = author;
         this.genre = genre;
+    }
+
+    public String getId() {
+        return id;
     }
 
     public String getTitle() {
@@ -31,6 +40,10 @@ public class Book {
 
     public Genre getGenre() {
         return genre;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public void setTitle(String title) {
@@ -50,7 +63,8 @@ public class Book {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Book book = (Book) o;
-        return title.equals(book.title) && author.equals(book.author) && genre.equals(book.genre);
+        return title.equals(book.title) && Objects.equals(author, book.author) &&
+                Objects.equals(genre, book.genre);
     }
 
     @Override

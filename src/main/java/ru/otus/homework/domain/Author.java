@@ -1,5 +1,6 @@
 package ru.otus.homework.domain;
 
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
@@ -7,7 +8,9 @@ import java.util.Objects;
 
 @Document(collection = "authors")
 public class Author {
-    @Field(name = "name")
+    @Id
+    private String id;
+    @Field("name")
     private String name;
 
     public Author() {
@@ -17,8 +20,16 @@ public class Author {
         this.name = name;
     }
 
+    public String getId() {
+        return id;
+    }
+
     public String getName() {
         return name;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public void setName(String name) {

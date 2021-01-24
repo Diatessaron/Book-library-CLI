@@ -1,12 +1,7 @@
 package ru.otus.homework.service;
 
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.otus.homework.domain.Author;
 import ru.otus.homework.domain.Book;
 import ru.otus.homework.domain.Comment;
 import ru.otus.homework.repository.BookRepository;
@@ -18,13 +13,10 @@ import java.util.List;
 public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
     private final BookRepository bookRepository;
-    private final MongoTemplate mongoTemplate;
 
-    public CommentServiceImpl(CommentRepository commentRepository, BookRepository bookRepository,
-                              MongoTemplate mongoTemplate) {
+    public CommentServiceImpl(CommentRepository commentRepository, BookRepository bookRepository) {
         this.commentRepository = commentRepository;
         this.bookRepository = bookRepository;
-        this.mongoTemplate = mongoTemplate;
     }
 
     @Transactional
@@ -64,7 +56,7 @@ public class CommentServiceImpl implements CommentService {
 
         final Book book = bookList.get(0);
 
-        return commentRepository.findByBookTitle(book.getTitle());
+        return commentRepository.findByBook_Title(book.getTitle());
     }
 
     @Transactional(readOnly = true)
@@ -76,9 +68,10 @@ public class CommentServiceImpl implements CommentService {
     @Transactional
     @Override
     public String updateComment(String oldCommentContent, String commentContent) {
-        final List<Book> bookList = bookRepository.findByTitle(commentRepository.findByContent
+        final Comment comment = commentRepository.findByContent
                 (oldCommentContent).orElseThrow
-                (() -> new IllegalArgumentException("Incorrect old comment content")).getBookTitle());
+                (() -> new IllegalArgumentException("Incorrect old comment content"));
+        final List<Book> bookList = bookRepository.findByTitle(comment.getBook().getTitle());
 
         if (bookList.size() > 1)
             throw new IllegalArgumentException("Not unique result. Please, specify correct argument.");
@@ -86,12 +79,10 @@ public class CommentServiceImpl implements CommentService {
             throw new IllegalArgumentException("Incorrect book title");
 
         final Book book = bookList.get(0);
+        comment.setContent(commentContent);
+        comment.setBook(book.getTitle());
 
-        Query query = new Query();
-        query.addCriteria(Criteria.where("content").is(oldCommentContent));
-        Update update = new Update();
-        update.set("content", commentContent);
-        mongoTemplate.updateFirst(query, update, Comment.class);
+        commentRepository.save(comment);
 
         return book.getTitle() + " comment was updated";
     }
@@ -100,7 +91,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public String deleteByContent(String content) {
         final List<Book> bookList = bookRepository.findByTitle(commentRepository.findByContent(content)
-                .orElseThrow(() -> new IllegalArgumentException("Incorrect comment content")).getBookTitle());
+                .orElseThrow(() -> new IllegalArgumentException("Incorrect comment content")).getBook().getTitle());
 
         if (bookList.size() > 1)
             throw new IllegalArgumentException("Not unique result. Please, specify correct argument.");
