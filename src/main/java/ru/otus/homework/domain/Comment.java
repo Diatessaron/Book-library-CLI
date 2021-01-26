@@ -1,30 +1,30 @@
 package ru.otus.homework.domain;
 
-import javax.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+
 import java.util.Objects;
 
-@Entity
-@Table(name = "comments")
+@Document(collection = "comments")
 public class Comment {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
-    @Column(name = "content")
+    private String id;
+    @Field("content")
     private String content;
-    @ManyToOne(targetEntity = Book.class, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinColumn(name = "book_id")
+    @Field("book")
     private Book book;
 
     public Comment() {
     }
 
-    public Comment(long id, String content, Book book) {
-        this.id = id;
+    public Comment(String content, String bookTitle) {
         this.content = content;
-        this.book = book;
+        this.book = new Book();
+        this.book.setTitle(bookTitle);
     }
 
-    public long getId() {
+    public String getId() {
         return id;
     }
 
@@ -36,17 +36,29 @@ public class Comment {
         return book;
     }
 
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public void setBook(String bookTitle) {
+        this.book.setTitle(bookTitle);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Comment comment = (Comment) o;
-        return id == comment.id && content.equals(comment.content);
+        return content.equals(comment.content) && book.equals(comment.book);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, content);
+        return Objects.hash(content, book);
     }
 
     @Override

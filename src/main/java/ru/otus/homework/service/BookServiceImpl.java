@@ -1,29 +1,32 @@
 package ru.otus.homework.service;
 
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.otus.homework.domain.Author;
 import ru.otus.homework.domain.Book;
+import ru.otus.homework.domain.Comment;
 import ru.otus.homework.domain.Genre;
 import ru.otus.homework.repository.AuthorRepository;
 import ru.otus.homework.repository.BookRepository;
+import ru.otus.homework.repository.CommentRepository;
 import ru.otus.homework.repository.GenreRepository;
 
-import javax.persistence.NoResultException;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class BookServiceImpl implements BookService {
     private final BookRepository bookRepository;
     private final AuthorRepository authorRepository;
     private final GenreRepository genreRepository;
+    private final CommentRepository commentRepository;
 
-    public BookServiceImpl(BookRepository bookRepository,
-                           AuthorRepository authorRepository, GenreRepository genreRepository) {
+    public BookServiceImpl(BookRepository bookRepository, AuthorRepository authorRepository,
+                           GenreRepository genreRepository, CommentRepository commentRepository) {
         this.bookRepository = bookRepository;
         this.authorRepository = authorRepository;
         this.genreRepository = genreRepository;
+        this.commentRepository = commentRepository;
     }
 
     @Transactional
@@ -31,44 +34,62 @@ public class BookServiceImpl implements BookService {
     public void saveBook(String title, String authorNameParameter, String genreNameParameter) {
         Author author = getAuthor(authorNameParameter);
         Genre genre = getGenre(genreNameParameter);
-        final Book book = new Book(0L, title, author, genre);
+        final Book book = new Book(title, author, genre);
 
         bookRepository.save(book);
     }
 
     @Transactional(readOnly = true)
     @Override
-    public Book getBookById(long id) {
-        return bookRepository.findById(id).orElseThrow(
-                () -> new IllegalArgumentException("Incorrect book id"));
-    }
-
-    @Transactional(readOnly = true)
-    @Override
     public Book getBookByTitle(String title) {
-        return bookRepository.findByTitle(title).orElseThrow
-                (() -> new IllegalArgumentException("Incorrect book title"));
+        final List<Book> bookList = bookRepository.findByTitle(title);
+
+        if (bookList.size() > 1)
+            throw new IllegalArgumentException("Not unique result. Please, specify correct argument.");
+        else if (bookList.isEmpty())
+            throw new IllegalArgumentException("Incorrect book title");
+
+        return bookList.get(0);
     }
 
     @Transactional(readOnly = true)
     @Override
     public Book getBookByAuthor(String author) {
-        return bookRepository.findByAuthor_Name(author).orElseThrow
-                (() -> new IllegalArgumentException("Incorrect author name"));
+        final List<Book> bookList = bookRepository.findByAuthor_Name(author);
+
+        if (bookList.size() > 1)
+            throw new IllegalArgumentException("Not unique result. Please, specify correct argument.");
+        else if (bookList.isEmpty())
+            throw new IllegalArgumentException("Incorrect author name");
+
+        return bookList.get(0);
     }
 
     @Transactional(readOnly = true)
     @Override
     public Book getBookByGenre(String genre) {
-        return bookRepository.findByGenre_Name(genre).orElseThrow
-                (() -> new IllegalArgumentException("Incorrect genre name"));
+        final List<Book> bookList = bookRepository.findByGenre_Name(genre);
+
+        if (bookList.size() > 1)
+            throw new IllegalArgumentException("Not unique result. Please, specify correct argument.");
+        else if (bookList.isEmpty())
+            throw new IllegalArgumentException("Incorrect genre name");
+
+        return bookList.get(0);
     }
 
     @Transactional(readOnly = true)
     @Override
     public Book getBookByComment(String comment) {
-        return bookRepository.findByComment_Content(comment).orElseThrow
-                (() -> new IllegalArgumentException("Incorrect comment content"));
+        final List<Book> bookList = bookRepository.findByTitle(commentRepository.findByContent(comment)
+                .orElseThrow(() -> new IllegalArgumentException("Incorrect book comment")).getBook().getTitle());
+
+        if (bookList.size() > 1)
+            throw new IllegalArgumentException("Not unique result. Please, specify correct argument.");
+        else if (bookList.isEmpty())
+            throw new IllegalArgumentException("Incorrect book title");
+
+        return bookList.get(0);
     }
 
     @Transactional(readOnly = true)
@@ -79,37 +100,57 @@ public class BookServiceImpl implements BookService {
 
     @Transactional
     @Override
-    public void updateBook(long id, String title, String authorNameParameter, String genreNameParameter) {
+    public void updateBook(String oldBookTitle, String title, String authorNameParameter,
+                           String genreNameParameter) {
         Author author = getAuthor(authorNameParameter);
         Genre genre = getGenre(genreNameParameter);
-        final Book book = new Book(id, title, author, genre);
+
+        final List<Book> bookList = bookRepository.findByTitle(oldBookTitle);
+
+        if (bookList.size() > 1)
+            throw new IllegalArgumentException("Not unique result. Please, specify correct argument.");
+        else if (bookList.isEmpty())
+            throw new IllegalArgumentException("Incorrect book title");
+
+        final Book book = bookList.get(0);
+        book.setAuthor(author);
+        book.setGenre(genre);
+        book.setTitle(title);
 
         bookRepository.save(book);
+
+        final List<Comment> commentList = commentRepository.findByBook_Title(oldBookTitle);
+
+        commentList.forEach(c -> c.setBook(title));
+        commentRepository.saveAll(commentList);
     }
 
     @Transactional
     @Override
-    public void deleteBookById(long id) {
-        bookRepository.deleteById(id);
+    public void deleteBookByTitle(String title) {
+        bookRepository.deleteByTitle(title);
+        commentRepository.deleteByBook_Title(title);
     }
 
     private Author getAuthor(String authorName) {
-        final Author author = authorRepository.findByName(authorName)
-                .orElse(new Author(0L, authorName));
+        final List<Author> authors = authorRepository.findByName(authorName);
 
-        if (author.getId() == 0L)
+        if (authors.isEmpty()) {
+            final Author author = new Author(authorName);
             authorRepository.save(author);
-
-        return author;
+            return author;
+        } else
+            return authors.get(0);
     }
 
     private Genre getGenre(String genreName) {
-        final Genre genre = genreRepository.findByName(genreName)
-                .orElse(new Genre(0L, genreName));
+        final Optional<Genre> optionalGenre = genreRepository.findByName(genreName);
 
-        if (genre.getId() == 0L)
+        if (optionalGenre.isEmpty()) {
+            final Genre genre = new Genre(genreName);
             genreRepository.save(genre);
-
-        return genre;
+            return genre;
+        } else
+            return optionalGenre.get();
     }
 }

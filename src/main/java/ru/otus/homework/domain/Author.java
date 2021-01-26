@@ -1,26 +1,26 @@
 package ru.otus.homework.domain;
 
-import javax.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+
 import java.util.Objects;
 
-@Entity
-@Table(name = "authors")
+@Document(collection = "authors")
 public class Author {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
-    @Column(name = "name")
+    private String id;
+    @Field("name")
     private String name;
 
     public Author() {
     }
 
-    public Author(long id, String name) {
-        this.id = id;
+    public Author(String name) {
         this.name = name;
     }
 
-    public long getId() {
+    public String getId() {
         return id;
     }
 
@@ -28,17 +28,25 @@ public class Author {
         return name;
     }
 
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Author author = (Author) o;
-        return id == author.id && name.equals(author.name);
+        return name.equals(author.name);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name);
+        return Objects.hash(name);
     }
 
     @Override

@@ -1,34 +1,32 @@
 package ru.otus.homework.domain;
 
-import javax.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+
 import java.util.Objects;
 
-@Entity
-@Table(name = "books")
+@Document(collection = "books")
 public class Book {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
-    @Column(name = "title")
+    private String id;
+    @Field("title")
     private String title;
-    @ManyToOne(targetEntity = Author.class, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinColumn(name = "author_id")
+    @Field("author")
     private Author author;
-    @ManyToOne(targetEntity = Genre.class, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinColumn(name = "genre_id")
+    @Field("genre")
     private Genre genre;
 
     public Book() {
     }
 
-    public Book(long id, String title, Author author, Genre genre) {
-        this.id = id;
+    public Book(String title, Author author, Genre genre) {
         this.title = title;
         this.author = author;
         this.genre = genre;
     }
 
-    public long getId() {
+    public String getId() {
         return id;
     }
 
@@ -44,17 +42,34 @@ public class Book {
         return genre;
     }
 
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setAuthor(Author author) {
+        this.author = author;
+    }
+
+    public void setGenre(Genre genre) {
+        this.genre = genre;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Book book = (Book) o;
-        return id == book.id && title.equals(book.title) && Objects.equals(author, book.author) && Objects.equals(genre, book.genre);
+        return title.equals(book.title) && Objects.equals(author, book.author) &&
+                Objects.equals(genre, book.genre);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, title, author, genre);
+        return Objects.hash(title, author, genre);
     }
 
     @Override

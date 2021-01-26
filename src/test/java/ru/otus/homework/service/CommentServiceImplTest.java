@@ -1,113 +1,158 @@
 package ru.otus.homework.service;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.InOrder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.otus.homework.domain.Author;
 import ru.otus.homework.domain.Book;
 import ru.otus.homework.domain.Comment;
 import ru.otus.homework.domain.Genre;
+import ru.otus.homework.repository.BookRepository;
+import ru.otus.homework.repository.CommentRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
 
-@DataJpaTest
+@DataMongoTest
 @Import(CommentServiceImpl.class)
 class CommentServiceImplTest {
+    @MockBean
+    private CommentRepository commentRepository;
+    @MockBean
+    private BookRepository bookRepository;
+
     @Autowired
     private CommentServiceImpl commentService;
-    @Autowired
-    private TestEntityManager em;
 
-    private final Book ulysses = new Book(1L, "Ulysses", new Author(1L, "James Joyce"),
-            new Genre(1L, "Modernist novel"));
-    private final Comment ulyssesComment = new Comment(1L, "Published in 1922", ulysses);
+    private final Book ulysses = new Book("Ulysses", new Author("James Joyce"),
+            new Genre("Modernist novel"));
+    private final Comment ulyssesComment = new Comment("Published in 1922", ulysses.getTitle());
 
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void testSaveByComparing() {
-        final Author foucault = new Author(0, "Michel Foucault");
-        final Genre philosophy = new Genre(0, "Philosophy");
-        final Book book = new Book(0, "Discipline and Punish", foucault,
-                philosophy);
-        final Comment expected = new Comment(0L, "Published in 1975", book);
+        final Author foucault = new Author("Michel Foucault");
+        final Genre philosophy = new Genre("Philosophy");
+        final Book book = new Book("Discipline and Punish", foucault, philosophy);
+        final Comment expected = new Comment("Published in 1975", book.getTitle());
 
-        em.persist(book);
-        commentService.saveComment(expected.getBook().getId(), expected.getContent());
-        final Comment actual = commentService.getCommentById(2L);
+        when(bookRepository.save(book)).thenReturn(book);
+        when(bookRepository.findByTitle(book.getTitle())).thenReturn(List.of(book));
+        when(commentRepository.save(expected)).thenReturn(expected);
+        when(commentRepository.save(expected)).thenReturn(expected);
+        when(commentRepository.findByContent(expected.getContent())).thenReturn(Optional.of(expected));
+
+        bookRepository.save(book);
+        commentService.saveComment(expected.getBook().getTitle(), expected.getContent());
+        final Comment actual = commentService.getCommentByContent(expected.getContent());
 
         assertEquals(expected.getContent(), actual.getContent());
-    }
 
-    @Test
-    void shouldReturnCorrectCommentById() {
-        commentService.saveComment(ulyssesComment.getBook().getId(), ulyssesComment.getContent());
-        final Comment actual = commentService.getCommentById(1L);
-
-        assertEquals(ulyssesComment, actual);
+        final InOrder inOrder = inOrder(bookRepository, commentRepository);
+        inOrder.verify(bookRepository).findByTitle(book.getTitle());
+        inOrder.verify(commentRepository).save(expected);
     }
 
     @Test
     void shouldReturnCorrectCommentByContent() {
+        when(commentRepository.findByContent(ulyssesComment.getContent())).thenReturn
+                (Optional.of(ulyssesComment));
+
         final Comment actual = commentService.getCommentByContent(ulyssesComment.getContent());
 
         assertEquals(ulyssesComment, actual);
+
+        verify(commentRepository, times(1)).findByContent(ulyssesComment.getContent());
     }
 
     @Test
-    void shouldThrowExceptionAfterGetCommentByContentMethodInvocation(){
-        assertThrows(IllegalArgumentException.class, () -> commentService.getCommentByContent("comment"));
-    }
+    void testGetCommentByBookMethod() {
+        when(bookRepository.findByTitle(ulysses.getTitle())).thenReturn(List.of(ulysses));
+        when(commentRepository.findByBook_Title(ulysses.getTitle())).thenReturn(List.of(ulyssesComment));
 
-    @Test
-    void testGetCommentByBookMethod(){
         final List<Comment> expected = List.of(ulyssesComment);
         final List<Comment> actual = commentService.getCommentsByBook("Ulysses");
 
         assertEquals(expected, actual);
+
+        final InOrder inOrder = inOrder(bookRepository, commentRepository);
+        inOrder.verify(bookRepository).findByTitle(ulysses.getTitle());
+        inOrder.verify(commentRepository).findByBook_Title(ulysses.getTitle());
     }
 
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
-    void shouldReturnCorrectListOfComments(){
-        final Author foucault = new Author(0, "Michel Foucault");
-        final Genre philosophy = new Genre(0, "Philosophy");
-        final Book book = new Book(0, "Discipline and Punish", foucault,
-                philosophy);
+    void shouldReturnCorrectListOfComments() {
+        final Author foucault = new Author("Michel Foucault");
+        final Genre philosophy = new Genre("Philosophy");
+        final Book book = new Book("Discipline and Punish", foucault, philosophy);
 
-        final Comment disciplineAndPunishComment = new Comment(2L, "Published in 1975", book);
+        final Comment disciplineAndPunishComment = new Comment("Published in 1975", book.getTitle());
         final List<Comment> expected = List.of(this.ulyssesComment, disciplineAndPunishComment);
 
-        em.persist(book);
-        commentService.saveComment(disciplineAndPunishComment.getBook().getId(),
+        when(commentRepository.save(disciplineAndPunishComment)).thenReturn(disciplineAndPunishComment);
+        when(commentRepository.findAll()).thenReturn(List.of(ulyssesComment, disciplineAndPunishComment));
+        when(bookRepository.findByTitle(book.getTitle())).thenReturn(List.of(book));
+
+        commentService.saveComment(disciplineAndPunishComment.getBook().getTitle(),
                 disciplineAndPunishComment.getContent());
         final List<Comment> actual = commentService.getAll();
 
         assertEquals(expected, actual);
+
+        final InOrder inOrder = inOrder(bookRepository, commentRepository);
+        inOrder.verify(bookRepository).findByTitle(book.getTitle());
+        inOrder.verify(commentRepository).save(disciplineAndPunishComment);
+        inOrder.verify(commentRepository).findAll();
     }
 
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void shouldUpdateCommentCorrectly() {
-        commentService.updateComment(1L, 1L, "Comment");
+        final Comment comment = new Comment("Comment", ulysses.getTitle());
 
-        final Comment actualComment = em.find(Comment.class, 1L);
+        when(commentRepository.findByContent(ulyssesComment.getContent())).thenReturn
+                (Optional.of(ulyssesComment));
+        when(bookRepository.findByTitle(ulysses.getTitle())).thenReturn(List.of(ulysses));
+        when(commentRepository.save(comment)).thenReturn(comment);
+        when(commentRepository.findByContent(comment.getContent())).thenReturn(Optional.of(comment));
+
+        commentService.updateComment("Published in 1922", "Comment");
+
+        final Comment actualComment = commentService.getCommentByContent("Comment");
         assertThat(actualComment).isNotNull().matches(s -> !s.getContent().isBlank())
                 .matches(s -> s.getContent().equals("Comment"));
+
+        final InOrder inOrder = inOrder(bookRepository, commentRepository);
+        inOrder.verify(commentRepository).findByContent("Published in 1922");
+        inOrder.verify(bookRepository).findByTitle("Ulysses");
+        inOrder.verify(commentRepository).save(comment);
     }
 
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
-    void testDeleteByIdMethodByResultStringComparing(){
+    void testDeleteByIdMethodByResultStringComparing() {
+        when(commentRepository.findByContent(ulyssesComment.getContent())).thenReturn
+                (Optional.of(ulyssesComment));
+        when(bookRepository.findByTitle(ulysses.getTitle())).thenReturn(List.of(ulysses));
+        doNothing().when(commentRepository).deleteByContent(ulyssesComment.getContent());
+
         final String expected = "Ulysses comment was deleted";
-        final String actual = commentService.deleteById(1L);
+        final String actual = commentService.deleteByContent("Published in 1922");
 
         assertEquals(expected, actual);
+
+        final InOrder inOrder = inOrder(bookRepository, commentRepository);
+        inOrder.verify(commentRepository).findByContent(ulyssesComment.getContent());
+        inOrder.verify(bookRepository).findByTitle(ulysses.getTitle());
+        inOrder.verify(commentRepository).deleteByContent(ulyssesComment.getContent());
     }
 }

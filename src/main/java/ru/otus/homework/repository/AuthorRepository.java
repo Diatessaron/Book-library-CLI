@@ -1,16 +1,12 @@
 package ru.otus.homework.repository;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.mongodb.repository.MongoRepository;
 import ru.otus.homework.domain.Author;
 
-import java.util.Optional;
+import java.util.List;
 
-public interface AuthorRepository extends JpaRepository<Author, Long> {
-    Optional<Author> findByName(String name);
+public interface AuthorRepository extends MongoRepository<Author, String> {
+    List<Author> findByName(String name);
 
-    @Modifying
-    @Query("update Author a set a.name = :name where a.id = :id")
-    void update(String name, long id);
+    void deleteByName(String name);
 }

@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.shell.Shell;
-import org.springframework.test.annotation.DirtiesContext;
 import ru.otus.homework.domain.Author;
 import ru.otus.homework.repository.AuthorRepository;
 
@@ -14,7 +13,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest
 class AuthorCommandsTest {
@@ -23,18 +23,8 @@ class AuthorCommandsTest {
 
     @Autowired
     private Shell shell;
-    public final Author jamesJoyce = new Author(1, "James Joyce");
+    public final Author jamesJoyce = new Author("James Joyce");
 
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
-    @Test
-    void testInsertMethodByTimesOfInvocation() {
-        shell.evaluate(() -> "aInsert Michel,Foucault");
-
-        verify(authorRepository, times(1))
-                .save(new Author(0L, "Michel Foucault"));
-    }
-
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void shouldReturnCorrectMessage() {
         final String expected = "You successfully saved a Michel Foucault to repository";
@@ -44,17 +34,8 @@ class AuthorCommandsTest {
     }
 
     @Test
-    void testGetAuthorByIdByMessageComparison() {
-        when(authorRepository.findById(1L)).thenReturn(Optional.of(jamesJoyce));
-        final String expected = jamesJoyce.toString();
-        final String actual = shell.evaluate(() -> "authorById 1").toString();
-
-        assertEquals(expected, actual);
-    }
-
-    @Test
     void testGetAuthorByNameByMessageComparison() {
-        when(authorRepository.findByName(jamesJoyce.getName())).thenReturn(Optional.of(jamesJoyce));
+        when(authorRepository.findByName(jamesJoyce.getName())).thenReturn(List.of(jamesJoyce));
         final String expected = jamesJoyce.toString();
         final String actual = shell.evaluate(() -> "authorByName James,Joyce").toString();
 
@@ -72,31 +53,31 @@ class AuthorCommandsTest {
 
     @Test
     void shouldReturnCorrectMessageAfterUpdateMethod() {
+        when(authorRepository.findByName("James Joyce")).thenReturn(List.of(jamesJoyce));
+
         final String expected = "Michel Foucault was updated";
-        final String actual = shell.evaluate(() -> "aUpdate 1 Michel,Foucault").toString();
+        final String actual = shell.evaluate(() -> "aUpdate James,Joyce Michel,Foucault").toString();
 
         assertEquals(expected, actual);
     }
 
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     @Test
     void shouldReturnCorrectMessageAfterDeleteMethod() {
-        when(authorRepository.findById(1L)).thenReturn(Optional.of(jamesJoyce));
+        when(authorRepository.findByName("James Joyce")).thenReturn(List.of(jamesJoyce));
 
         final String expected = "James Joyce was deleted";
-        final String actual = shell.evaluate(() -> "aDelete 1").toString();
+        final String actual = shell.evaluate(() -> "aDelete James,Joyce").toString();
 
         assertEquals(expected, actual);
     }
 
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void bookShouldBeDeletedBeforeAuthorDeletion() {
-        when(authorRepository.findById(1L)).thenReturn(Optional.of(jamesJoyce));
-        shell.evaluate(() -> "aDelete 1");
+        when(authorRepository.findByName("James Joyce")).thenReturn(List.of(jamesJoyce));
+        shell.evaluate(() -> "aDelete James,Joyce");
 
         final InOrder inOrder = inOrder(authorRepository);
-        inOrder.verify(authorRepository).findById(1L);
-        inOrder.verify(authorRepository).deleteById(1L);
+        inOrder.verify(authorRepository).findByName("James Joyce");
+        inOrder.verify(authorRepository).deleteByName("James Joyce");
     }
 }
