@@ -59,7 +59,7 @@ public class BookServiceImpl implements BookService {
 
         if (bookList.size() > 1)
             throw new IllegalArgumentException("Not unique result. Please, specify correct argument.");
-        else if(bookList.isEmpty())
+        else if (bookList.isEmpty())
             throw new IllegalArgumentException("Incorrect author name");
 
         return bookList.get(0);
@@ -72,7 +72,7 @@ public class BookServiceImpl implements BookService {
 
         if (bookList.size() > 1)
             throw new IllegalArgumentException("Not unique result. Please, specify correct argument.");
-        else if(bookList.isEmpty())
+        else if (bookList.isEmpty())
             throw new IllegalArgumentException("Incorrect genre name");
 
         return bookList.get(0);
@@ -133,14 +133,14 @@ public class BookServiceImpl implements BookService {
     }
 
     private Author getAuthor(String authorName) {
-        final Optional<Author> optionalAuthor = authorRepository.findByName(authorName);
+        final List<Author> authors = authorRepository.findByName(authorName);
 
-        if (optionalAuthor.isEmpty()) {
+        if (authors.isEmpty()) {
             final Author author = new Author(authorName);
             authorRepository.save(author);
             return author;
         } else
-            return optionalAuthor.get();
+            return authors.get(0);
     }
 
     private Genre getGenre(String genreName) {

@@ -36,7 +36,7 @@ class BookCommandsTest {
         final Author author = new Author("author");
         final Genre genre = new Genre("genre");
         final Book book = new Book("book", author, genre);
-        when(authorRepository.findByName("author")).thenReturn(Optional.of(author));
+        when(authorRepository.findByName("author")).thenReturn(List.of(author));
         when(genreRepository.findByName("genre")).thenReturn(Optional.of(genre));
         shell.evaluate(() -> "bInsert book author genre");
 
@@ -47,7 +47,7 @@ class BookCommandsTest {
 
     @Test
     void shouldReturnCorrectMessageAfterInsertMethod() {
-        when(authorRepository.findByName("author")).thenReturn(Optional.of
+        when(authorRepository.findByName("author")).thenReturn(List.of
                 (new Author("author")));
         when(genreRepository.findByName("genre")).thenReturn(Optional.of
                 (new Genre("genre")));
@@ -59,7 +59,7 @@ class BookCommandsTest {
 
     @Test
     void shouldReturnCorrectMessageWithMultipleArgumentsAfterInsertMethod() {
-        when(authorRepository.findByName("author")).thenReturn(Optional.of
+        when(authorRepository.findByName("author")).thenReturn(List.of
                 (new Author("author")));
         when(genreRepository.findByName("genre")).thenReturn(Optional.of
                 (new Genre("genre")));
@@ -121,7 +121,7 @@ class BookCommandsTest {
     @Test
     void shouldReturnCorrectMessageWithMultipleArgumentsAfterUpdateMethod() {
         when(authorRepository.findByName("Michel Foucault")).thenReturn
-                (Optional.of((new Author("Michel Foucault"))));
+                (List.of((new Author("Michel Foucault"))));
         when(genreRepository.findByName("Philosophy")).thenReturn
                 (Optional.of(new Genre("Philosophy")));
         when(bookRepository.findByTitle("Ulysses")).thenReturn
@@ -136,7 +136,7 @@ class BookCommandsTest {
     @Test
     void shouldReturnCorrectMessageAfterUpdateMethodWithOldAuthorAndGenre() {
         when(authorRepository.findByName("Michel Foucault")).thenReturn
-                (Optional.of(new Author("Michel Foucault")));
+                (List.of(new Author("Michel Foucault")));
         when(genreRepository.findByName("Philosophy")).thenReturn
                 (Optional.of(new Genre("Philosophy")));
         when(bookRepository.findByTitle("Ulysses")).thenReturn

@@ -24,9 +24,9 @@ public class CommentServiceImpl implements CommentService {
     public String saveComment(String bookTitle, String commentContent) {
         final List<Book> bookList = bookRepository.findByTitle(bookTitle);
 
-        if(bookList.size() > 1)
+        if (bookList.size() > 1)
             throw new IllegalArgumentException("Not unique result. Please, specify correct argument.");
-        else if(bookList.isEmpty())
+        else if (bookList.isEmpty())
             throw new IllegalArgumentException("Incorrect book title");
 
         final String book = bookList.get(0).getTitle();
@@ -49,9 +49,9 @@ public class CommentServiceImpl implements CommentService {
     public List<Comment> getCommentsByBook(String bookTitle) {
         final List<Book> bookList = bookRepository.findByTitle(bookTitle);
 
-        if(bookList.size() > 1)
+        if (bookList.size() > 1)
             throw new IllegalArgumentException("Not unique result. Please, specify correct argument.");
-        else if(bookList.isEmpty())
+        else if (bookList.isEmpty())
             throw new IllegalArgumentException("Incorrect book title");
 
         final Book book = bookList.get(0);

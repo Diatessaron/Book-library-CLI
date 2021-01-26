@@ -30,8 +30,14 @@ public class AuthorServiceImpl implements AuthorService {
     @Transactional(readOnly = true)
     @Override
     public Author getAuthorByName(String name) {
-        return authorRepository.findByName(name)
-                .orElseThrow(() -> new IllegalArgumentException("Incorrect name"));
+        final List<Author> authors = authorRepository.findByName(name);
+
+        if (authors.isEmpty())
+            throw new IllegalArgumentException("Incorrect author name. Please, specify correct argument.");
+        else if (authors.size() > 1)
+            throw new IllegalArgumentException("Non unique result.");
+
+        return authors.get(0);
     }
 
     @Transactional(readOnly = true)
@@ -43,14 +49,20 @@ public class AuthorServiceImpl implements AuthorService {
     @Transactional
     @Override
     public String updateAuthor(String oldAuthorName, String name) {
-        final Author author = authorRepository.findByName(oldAuthorName).orElseThrow
-                (() -> new IllegalArgumentException("Incorrect author name"));
+        final List<Author> authors = authorRepository.findByName(oldAuthorName);
+
+        if (authors.isEmpty())
+            throw new IllegalArgumentException("Incorrect author name. Please, specify correct argument.");
+        else if (authors.size() > 1)
+            throw new IllegalArgumentException("Non unique result.");
+
+        final Author author = authors.get(0);
         author.setName(name);
         authorRepository.save(author);
 
         final List<Book> bookList = bookRepository.findByAuthor_Name(oldAuthorName);
 
-        if(!bookList.isEmpty()) {
+        if (!bookList.isEmpty()) {
             bookList.forEach(b -> b.setAuthor(author));
             bookRepository.saveAll(bookList);
         }
@@ -61,8 +73,15 @@ public class AuthorServiceImpl implements AuthorService {
     @Transactional
     @Override
     public String deleteAuthorByName(String name) {
-        final Author author = authorRepository.findByName(name)
-                .orElseThrow(() -> new IllegalArgumentException("Incorrect name"));
+        final List<Author> authors = authorRepository.findByName(name);
+
+        if (authors.isEmpty())
+            throw new IllegalArgumentException("Incorrect author name. Please, specify correct argument.");
+        else if (authors.size() > 1)
+            throw new IllegalArgumentException("Non unique result.");
+
+        final Author author = authors.get(0);
+
         authorRepository.deleteByName(name);
         bookRepository.deleteByAuthor_Name(name);
 

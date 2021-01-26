@@ -44,7 +44,7 @@ public class Comment {
         this.content = content;
     }
 
-    public void setBook(String bookTitle){
+    public void setBook(String bookTitle) {
         this.book.setTitle(bookTitle);
     }
 

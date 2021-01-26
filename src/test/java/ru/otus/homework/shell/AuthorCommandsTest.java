@@ -35,7 +35,7 @@ class AuthorCommandsTest {
 
     @Test
     void testGetAuthorByNameByMessageComparison() {
-        when(authorRepository.findByName(jamesJoyce.getName())).thenReturn(Optional.of(jamesJoyce));
+        when(authorRepository.findByName(jamesJoyce.getName())).thenReturn(List.of(jamesJoyce));
         final String expected = jamesJoyce.toString();
         final String actual = shell.evaluate(() -> "authorByName James,Joyce").toString();
 
@@ -53,7 +53,7 @@ class AuthorCommandsTest {
 
     @Test
     void shouldReturnCorrectMessageAfterUpdateMethod() {
-        when(authorRepository.findByName("James Joyce")).thenReturn(Optional.of(jamesJoyce));
+        when(authorRepository.findByName("James Joyce")).thenReturn(List.of(jamesJoyce));
 
         final String expected = "Michel Foucault was updated";
         final String actual = shell.evaluate(() -> "aUpdate James,Joyce Michel,Foucault").toString();
@@ -63,7 +63,7 @@ class AuthorCommandsTest {
 
     @Test
     void shouldReturnCorrectMessageAfterDeleteMethod() {
-        when(authorRepository.findByName("James Joyce")).thenReturn(Optional.of(jamesJoyce));
+        when(authorRepository.findByName("James Joyce")).thenReturn(List.of(jamesJoyce));
 
         final String expected = "James Joyce was deleted";
         final String actual = shell.evaluate(() -> "aDelete James,Joyce").toString();
@@ -73,7 +73,7 @@ class AuthorCommandsTest {
 
     @Test
     void bookShouldBeDeletedBeforeAuthorDeletion() {
-        when(authorRepository.findByName("James Joyce")).thenReturn(Optional.of(jamesJoyce));
+        when(authorRepository.findByName("James Joyce")).thenReturn(List.of(jamesJoyce));
         shell.evaluate(() -> "aDelete James,Joyce");
 
         final InOrder inOrder = inOrder(authorRepository);

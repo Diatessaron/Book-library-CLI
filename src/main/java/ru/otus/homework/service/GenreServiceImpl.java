@@ -51,7 +51,7 @@ public class GenreServiceImpl implements GenreService {
 
         final List<Book> bookList = bookRepository.findByGenre_Name(oldGenreName);
 
-        if(!bookList.isEmpty()) {
+        if (!bookList.isEmpty()) {
             bookList.forEach(b -> b.setGenre(genre));
             bookRepository.saveAll(bookList);
         }
