@@ -22,14 +22,7 @@ public class CommentServiceImpl implements CommentService {
     @Transactional
     @Override
     public String saveComment(String bookTitle, String commentContent) {
-        final List<Book> bookList = bookRepository.findByTitle(bookTitle);
-
-        if (bookList.size() > 1)
-            throw new IllegalArgumentException("Not unique result. Please, specify correct argument.");
-        else if (bookList.isEmpty())
-            throw new IllegalArgumentException("Incorrect book title");
-
-        final String book = bookList.get(0).getTitle();
+        final String book = getBook(bookRepository.findByTitle(bookTitle)).getTitle();
         final Comment comment = new Comment(commentContent, book);
 
         commentRepository.save(comment);
@@ -47,14 +40,7 @@ public class CommentServiceImpl implements CommentService {
     @Transactional(readOnly = true)
     @Override
     public List<Comment> getCommentsByBook(String bookTitle) {
-        final List<Book> bookList = bookRepository.findByTitle(bookTitle);
-
-        if (bookList.size() > 1)
-            throw new IllegalArgumentException("Not unique result. Please, specify correct argument.");
-        else if (bookList.isEmpty())
-            throw new IllegalArgumentException("Incorrect book title");
-
-        final Book book = bookList.get(0);
+        final Book book = getBook(bookRepository.findByTitle(bookTitle));
 
         return commentRepository.findByBook_Title(book.getTitle());
     }
@@ -71,14 +57,8 @@ public class CommentServiceImpl implements CommentService {
         final Comment comment = commentRepository.findByContent
                 (oldCommentContent).orElseThrow
                 (() -> new IllegalArgumentException("Incorrect old comment content"));
-        final List<Book> bookList = bookRepository.findByTitle(comment.getBook().getTitle());
 
-        if (bookList.size() > 1)
-            throw new IllegalArgumentException("Not unique result. Please, specify correct argument.");
-        else if (bookList.isEmpty())
-            throw new IllegalArgumentException("Incorrect book title");
-
-        final Book book = bookList.get(0);
+        final Book book = getBook(bookRepository.findByTitle(comment.getBook().getTitle()));
         comment.setContent(commentContent);
         comment.setBook(book.getTitle());
 
@@ -93,15 +73,19 @@ public class CommentServiceImpl implements CommentService {
         final List<Book> bookList = bookRepository.findByTitle(commentRepository.findByContent(content)
                 .orElseThrow(() -> new IllegalArgumentException("Incorrect comment content")).getBook().getTitle());
 
+        final Book book = getBook(bookList);
+
+        commentRepository.deleteByContent(content);
+
+        return book.getTitle() + " comment was deleted";
+    }
+
+    private Book getBook(List<Book> bookList){
         if (bookList.size() > 1)
             throw new IllegalArgumentException("Not unique result. Please, specify correct argument.");
         else if (bookList.isEmpty())
             throw new IllegalArgumentException("Incorrect book title");
 
-        final Book book = bookList.get(0);
-
-        commentRepository.deleteByContent(content);
-
-        return book.getTitle() + " comment was deleted";
+        return bookList.get(0);
     }
 }
