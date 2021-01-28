@@ -30,14 +30,7 @@ public class AuthorServiceImpl implements AuthorService {
     @Transactional(readOnly = true)
     @Override
     public Author getAuthorByName(String name) {
-        final List<Author> authors = authorRepository.findByName(name);
-
-        if (authors.isEmpty())
-            throw new IllegalArgumentException("Incorrect author name. Please, specify correct argument.");
-        else if (authors.size() > 1)
-            throw new IllegalArgumentException("Non unique result.");
-
-        return authors.get(0);
+        return getAuthor(name);
     }
 
     @Transactional(readOnly = true)
@@ -49,14 +42,7 @@ public class AuthorServiceImpl implements AuthorService {
     @Transactional
     @Override
     public String updateAuthor(String oldAuthorName, String name) {
-        final List<Author> authors = authorRepository.findByName(oldAuthorName);
-
-        if (authors.isEmpty())
-            throw new IllegalArgumentException("Incorrect author name. Please, specify correct argument.");
-        else if (authors.size() > 1)
-            throw new IllegalArgumentException("Non unique result.");
-
-        final Author author = authors.get(0);
+        final Author author = getAuthor(oldAuthorName);
         author.setName(name);
         authorRepository.save(author);
 
@@ -73,6 +59,15 @@ public class AuthorServiceImpl implements AuthorService {
     @Transactional
     @Override
     public String deleteAuthorByName(String name) {
+        final Author author = getAuthor(name);
+
+        authorRepository.deleteByName(name);
+        bookRepository.deleteByAuthor_Name(name);
+
+        return String.format("%s was deleted", author.getName());
+    }
+
+    private Author getAuthor(String name){
         final List<Author> authors = authorRepository.findByName(name);
 
         if (authors.isEmpty())
@@ -80,11 +75,6 @@ public class AuthorServiceImpl implements AuthorService {
         else if (authors.size() > 1)
             throw new IllegalArgumentException("Non unique result.");
 
-        final Author author = authors.get(0);
-
-        authorRepository.deleteByName(name);
-        bookRepository.deleteByAuthor_Name(name);
-
-        return String.format("%s was deleted", author.getName());
+        return authors.get(0);
     }
 }

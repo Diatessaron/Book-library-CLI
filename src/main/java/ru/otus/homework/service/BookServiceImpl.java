@@ -42,40 +42,19 @@ public class BookServiceImpl implements BookService {
     @Transactional(readOnly = true)
     @Override
     public Book getBookByTitle(String title) {
-        final List<Book> bookList = bookRepository.findByTitle(title);
-
-        if (bookList.size() > 1)
-            throw new IllegalArgumentException("Not unique result. Please, specify correct argument.");
-        else if (bookList.isEmpty())
-            throw new IllegalArgumentException("Incorrect book title");
-
-        return bookList.get(0);
+        return getBook(bookRepository.findByTitle(title));
     }
 
     @Transactional(readOnly = true)
     @Override
     public Book getBookByAuthor(String author) {
-        final List<Book> bookList = bookRepository.findByAuthor_Name(author);
-
-        if (bookList.size() > 1)
-            throw new IllegalArgumentException("Not unique result. Please, specify correct argument.");
-        else if (bookList.isEmpty())
-            throw new IllegalArgumentException("Incorrect author name");
-
-        return bookList.get(0);
+        return getBook(bookRepository.findByAuthor_Name(author));
     }
 
     @Transactional(readOnly = true)
     @Override
     public Book getBookByGenre(String genre) {
-        final List<Book> bookList = bookRepository.findByGenre_Name(genre);
-
-        if (bookList.size() > 1)
-            throw new IllegalArgumentException("Not unique result. Please, specify correct argument.");
-        else if (bookList.isEmpty())
-            throw new IllegalArgumentException("Incorrect genre name");
-
-        return bookList.get(0);
+        return getBook(bookRepository.findByGenre_Name(genre));
     }
 
     @Transactional(readOnly = true)
@@ -84,12 +63,7 @@ public class BookServiceImpl implements BookService {
         final List<Book> bookList = bookRepository.findByTitle(commentRepository.findByContent(comment)
                 .orElseThrow(() -> new IllegalArgumentException("Incorrect book comment")).getBook().getTitle());
 
-        if (bookList.size() > 1)
-            throw new IllegalArgumentException("Not unique result. Please, specify correct argument.");
-        else if (bookList.isEmpty())
-            throw new IllegalArgumentException("Incorrect book title");
-
-        return bookList.get(0);
+        return getBook(bookList);
     }
 
     @Transactional(readOnly = true)
@@ -105,14 +79,7 @@ public class BookServiceImpl implements BookService {
         Author author = getAuthor(authorNameParameter);
         Genre genre = getGenre(genreNameParameter);
 
-        final List<Book> bookList = bookRepository.findByTitle(oldBookTitle);
-
-        if (bookList.size() > 1)
-            throw new IllegalArgumentException("Not unique result. Please, specify correct argument.");
-        else if (bookList.isEmpty())
-            throw new IllegalArgumentException("Incorrect book title");
-
-        final Book book = bookList.get(0);
+        final Book book = getBook(bookRepository.findByTitle(oldBookTitle));
         book.setAuthor(author);
         book.setGenre(genre);
         book.setTitle(title);
@@ -130,6 +97,15 @@ public class BookServiceImpl implements BookService {
     public void deleteBookByTitle(String title) {
         bookRepository.deleteByTitle(title);
         commentRepository.deleteByBook_Title(title);
+    }
+
+    private Book getBook(List<Book> bookList){
+        if (bookList.size() > 1)
+            throw new IllegalArgumentException("Not unique result. Please, specify correct argument.");
+        else if (bookList.isEmpty())
+            throw new IllegalArgumentException("Incorrect book title");
+
+        return bookList.get(0);
     }
 
     private Author getAuthor(String authorName) {
